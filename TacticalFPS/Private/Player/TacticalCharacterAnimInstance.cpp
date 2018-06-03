@@ -320,7 +320,7 @@ FVector UTacticalCharacterAnimInstance::GetGunShake_Implementation()
 	const float ShakeUp = GetCurveValue(FName(TEXT("GunShakeUp")));
 
 	const UTacticalGameplaySettings* TacticalSettings = UTacticalGameplaySettings::StaticClass()->GetDefaultObject<UTacticalGameplaySettings>();
-	const float ShakeStrength = TacticalSettings->WeaponBobMultiplier;
+	const float ShakeStrength = TacticalSettings->WeaponBobMultiplier * FMath::Clamp((Speed)/250.f, 0.25f, 1.f);
 
 	return (FVector(0.f, ShakeRight * GunShakeTranslationFactor.X, ShakeUp * GunShakeTranslationFactor.Y) * (bAiming ? 0.3f : 1.f) * ShakeStrength);
 }
@@ -376,7 +376,7 @@ FRotator UTacticalCharacterAnimInstance::CalculateFootRotfromNormal(const FVecto
 {
 	return FRotator(-FMath::RadiansToDegrees(FMath::Atan2(Normal.X, Normal.Z)), 0.f, FMath::RadiansToDegrees(FMath::Atan2(Normal.Y, Normal.Z)));
 }
-eKTdcJn0
+
 bool UTacticalCharacterAnimInstance::IsMoving() const
 {
 	return (Speed > 10.f);
