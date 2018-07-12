@@ -426,9 +426,23 @@ APawn* ATacticalGameMode::SpawnEnemy(ATacticalEnemyStart* StartSpot)
 	if (!StartSpot)
 		return nullptr;
 
-	TSubclassOf<ACharacter> EnemyClass = StartSpot->EnemyClassOverride ? StartSpot->EnemyClassOverride : DefaultEnemyClass;
+	TSubclassOf<ACharacter> EnemyClass = nullptr;
+	const int32 NumEnemyClasses = SpawnEnemyClass.Num();
+	if (NumEnemyClasses < 1)
+	{
+		EnemyClass = DefaultEnemyClass;
+	}
+	else
+	{
+		const int32 SpawnIdx = FMath::RandRange(0, NumEnemyClasses - 1);
+		EnemyClass = SpawnEnemyClass[SpawnIdx];
+	}
+
+	//TSubclassOf<ACharacter> EnemyClass = StartSpot->EnemyClassOverride ? StartSpot->EnemyClassOverride : DefaultEnemyClass;
 	if (!EnemyClass)
+	{		
 		return nullptr;
+	}
 	
 	// don't allow pawn to be spawned with any pitch or roll
 	FRotator StartRotation(ForceInit);

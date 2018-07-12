@@ -28,5 +28,9 @@ FORCEINLINE class ATacticalCharacter* UTacticalWeaponState::GetInventoryOwner() 
 
 class FTimerManager& UTacticalWeaponState::GetWorldTimerManager() const
 {
-	return GetWorld()->GetTimerManager();
+	if (GetWorld())
+		return GetWorld()->GetTimerManager();
+	else
+		return GWorld->GetTimerManager();
+
 }

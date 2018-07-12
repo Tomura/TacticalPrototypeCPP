@@ -62,12 +62,13 @@ float UTacticalCharacterMovement::GetMaxSpeed() const
 
 	ATacticalCharacter* myChar = CharacterOwner ? Cast<ATacticalCharacter>(CharacterOwner) : nullptr;
 	bool bAiming = false;
-	if (myChar)
+	if (myChar != nullptr)
 	{
 		bAiming = myChar->IsAiming();
 		if (MovementMode == MOVE_Walking)
 		{
-			const bool bIsAI = myChar->GetController()->GetClass()->IsChildOf(AAIController::StaticClass());
+			
+			const bool bIsAI = myChar->IsAIControlled();
 			switch (Stance)
 			{
 			case ETacticalStance::STANCE_Default:

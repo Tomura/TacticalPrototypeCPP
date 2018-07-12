@@ -16,6 +16,7 @@ class TACTICALFPS_API UTacticalWeaponStateReloading : public UTacticalWeaponStat
 public:
 	UTacticalWeaponStateReloading();
 
+	virtual void OnComponentDestroyed(bool bDestroyingHierarchy) override;
 
 	virtual void BeginState(const UTacticalWeaponState* PrevState) override;
 	virtual void EndState(const UTacticalWeaponState* NextState) override;

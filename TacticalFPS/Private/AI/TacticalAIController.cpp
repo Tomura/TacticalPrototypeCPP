@@ -586,6 +586,47 @@ bool ATacticalAIController::GetBestHearingOrigin(FVector& OutVector, float MaxCo
 	return false;
 }
 
+bool ATacticalAIController::GetBestTeamOrigin(FVector& OutVector, float MaxCost, float MaxAge /*= 0.f*/) const
+{
+	if (GetPawn() == nullptr)
+		return false;
+
+	TArray<FVector> TeamLocs;
+	TArray<AActor*> TeamPerceivedActors;
+	GetPercievedTeamNotifications(TeamLocs, MaxAge);
+
+
+	if (TeamLocs.Num() <= 0)
+		return false;
+
+	//if (!bDirectDamage)
+	{
+		for (const FVector& Loc : TeamLocs)
+		{
+			FCollisionQueryParams TraceParams = FCollisionQueryParams("ViewTrace", false, this);
+			if (GetWorld()->LineTraceTestByChannel(GetPawn()->GetActorLocation(), Loc, TRACE_AIVision, TraceParams))
+			{
+				// We hit something. So we can't just shoot and attack. See if walking is worth it.
+				float Cost = -1.f;
+				ENavigationQueryResult::Type NavResult = UNavigationSystem::GetPathCost(GetWorld(), GetPawn()->GetActorLocation(), Loc, Cost, nullptr, HearingNavQueryFilter);
+
+				if (NavResult == ENavigationQueryResult::Success && Cost <= MaxCost && Cost >= 0.f)
+				{
+					OutVector = Loc;
+					return true;
+				}
+			}
+			else
+			{
+				OutVector = Loc;
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
 void ATacticalAIController::GetPerceivedGrenades(TArray<class ATacticalProjectile*>& OutGrenades) const
 {
 	TArray<AActor*> PerceptionActors;
@@ -635,7 +676,7 @@ AActor* ATacticalAIController::GetBestChaseActor(float MaxCost, float MaxAge) co
 
 	// first check for immediate threats like actors who have damaged you
 	TArray<AActor*> DamageActors;
-	PerceptionComp->GetCurrentlyPerceivedActors(UAISense_Damage::StaticClass(), DamageActors);
+	PerceptionComp->GetCurrentlyPerceivedActors(DamageConfig->GetSenseImplementation(), DamageActors);
 	
 	//float BestDistanceSq = -1.f;
 	//float BestAge = -1.f;

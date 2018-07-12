@@ -19,5 +19,10 @@ public:
 	UPROPERTY(Category = Animation, BlueprintReadWrite, EditAnywhere)
 		UAnimSequence* IdleAnimation_Left;
 	
-	
+
+	UPROPERTY(Category = Animation, BlueprintReadWrite, EditAnywhere)
+		FVector ReloadOffsetRight;
+
+	UPROPERTY(Category = Animation, BlueprintReadWrite, EditAnywhere)
+		FVector ReloadOffsetLeft;
 };

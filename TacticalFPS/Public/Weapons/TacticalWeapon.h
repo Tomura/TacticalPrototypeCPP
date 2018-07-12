@@ -414,6 +414,8 @@ public:
 	FName EquippedSocketName;
 	UPROPERTY(Category = Attachment, EditDefaultsOnly, BlueprintReadOnly)
 	FName EquippedSocketNameLeft;
+	UPROPERTY(Category = Attachment, EditDefaultsOnly, BlueprintReadOnly)
+	FName LeftHandSocketName;
 
 	FName GetEquippedSocketName();
 
@@ -478,7 +480,16 @@ public:
 
 
 	UPROPERTY(Category = "Weapon | Animation", EditDefaultsOnly, BlueprintReadOnly)
-	class UAnimSequence* FPHandsIdleAnim;
+		class UAnimSequence* FPHandsIdleAnim;
+	UPROPERTY(Category = "Weapon | Animation", EditDefaultsOnly, BlueprintReadOnly)
+		class UAnimSequence* FPHandsIdleAnimLeft;
+
+
+	UPROPERTY(Category = "Weapon | Animation", EditDefaultsOnly, BlueprintReadWrite)
+		FVector ReloadAnimOffsetRight;
+	UPROPERTY(Category = "Weapon | Animation", EditDefaultsOnly, BlueprintReadWrite)
+		FVector ReloadAnimOffsetLeft;
+
 
 	UPROPERTY(Category = "Weapon | Animation", EditDefaultsOnly)
 	class UAnimMontage*  ReloadAnimationDefault;
@@ -521,6 +532,7 @@ public:
 public:
 	UPROPERTY(Category = "Attachment", EditDefaultsOnly, BlueprintReadWrite)
 		FVector WeaponOffset;
+
 
 protected:
 

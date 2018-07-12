@@ -87,7 +87,10 @@ public:
 	virtual bool GetBestDamageOrigin(FVector& OutVector, float MaxCost, float MaxAge = 0.f) const;
 
 	UFUNCTION(Category = TacticalAI, BlueprintCallable)
-	virtual bool GetBestHearingOrigin(FVector& OutVector, float MaxCost, float MaxAge = 0.f) const;
+		virtual bool GetBestHearingOrigin(FVector& OutVector, float MaxCost, float MaxAge = 0.f) const;
+
+	UFUNCTION(Category = TacticalAI, BlueprintCallable)
+		virtual bool GetBestTeamOrigin(FVector& OutVector, float MaxCost, float MaxAge = 0.f) const;
 
 	UFUNCTION(Category = TacticalAI, BlueprintCallable)
 	virtual void GetPerceivedGrenades(TArray<class ATacticalProjectile*>& OutGrenades) const;

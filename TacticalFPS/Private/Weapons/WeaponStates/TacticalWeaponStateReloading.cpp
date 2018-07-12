@@ -14,6 +14,15 @@ UTacticalWeaponStateReloading::UTacticalWeaponStateReloading()
 }
 
 
+void UTacticalWeaponStateReloading::OnComponentDestroyed(bool bDestroyingHierarchy)
+{
+	if (GetWorldTimerManager().IsTimerActive(TimerReload))
+		GetWorldTimerManager().ClearTimer(TimerReload);
+
+	Super::OnComponentDestroyed(bDestroyingHierarchy);
+
+}
+
 void UTacticalWeaponStateReloading::BeginState(const UTacticalWeaponState* PrevState)
 {
 	GetWeapon()->bPendingReload = false;

@@ -187,6 +187,12 @@ ATacticalWeapon::ATacticalWeapon(const FObjectInitializer& OI)
 	FiringNoiseMaxRange = 2000.f;
 
 	ADSSpeed = 10.f;
+
+	FPHandsIdleAnimLeft = nullptr;
+	ReloadAnimOffsetLeft = FVector(0.f, 0.f, 0.f);
+	ReloadAnimOffsetRight = FVector(0.f, 0.f, 0.f);
+
+	LeftHandSocketName = FName("LeftHand");
 }
 
 void ATacticalWeapon::PostInitializeComponents()
@@ -496,7 +502,7 @@ FTransform ATacticalWeapon::GetLeftHandTransform() const
 
 FTransform ATacticalWeapon::GetOwnLeftHandTransform_Implementation() const
 {
-	const FTransform LeftHandSocketTransform = GetMesh()->GetSocketTransform(FName(TEXT("LeftHand")), RTS_Component); // Transform from Weapon Root -> Socket
+	const FTransform LeftHandSocketTransform = GetMesh()->GetSocketTransform(LeftHandSocketName, RTS_Component); // Transform from Weapon Root -> Socket
 	return LeftHandSocketTransform;
 }
 
@@ -726,7 +732,16 @@ void ATacticalWeapon::LocalSimulateEquip()
 			if (ArmsAnimInstance)
 			{
 				ArmsAnimInstance->IdleAnimation = FPHandsIdleAnim;
-				ArmsAnimInstance->IdleAnimation_Left = FPHandsIdleAnim;
+				if (FPHandsIdleAnimLeft != nullptr)
+				{
+					ArmsAnimInstance->IdleAnimation_Left = FPHandsIdleAnimLeft;
+				}
+				else
+				{
+					ArmsAnimInstance->IdleAnimation_Left = FPHandsIdleAnim;
+				}
+				ArmsAnimInstance->ReloadOffsetLeft = ReloadAnimOffsetLeft;
+				ArmsAnimInstance->ReloadOffsetRight = ReloadAnimOffsetRight;
 			}
 
 			TArray<UTacticalWeaponAttachmentPoint*> AttachPoints;

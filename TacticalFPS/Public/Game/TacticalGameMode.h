@@ -57,7 +57,10 @@ protected:
 	class APawn* SpawnEnemy(class ATacticalEnemyStart* StartPoint);
 
 	UPROPERTY(Category = Classes, EditAnywhere)
-	TSubclassOf<class ACharacter> DefaultEnemyClass;
+		TSubclassOf<class ACharacter> DefaultEnemyClass;
+
+	UPROPERTY(Category = Classes, EditAnywhere)
+	TArray<TSubclassOf<class ATacticalCharacter> > SpawnEnemyClass;
 
 
 	FTimerHandle TimerEndRound;
