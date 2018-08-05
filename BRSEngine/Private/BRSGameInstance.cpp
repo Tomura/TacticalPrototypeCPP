@@ -293,7 +293,7 @@ void UBRSGameInstance::SetIsOnline(bool bInIsOnline)
 		{
 			ULocalPlayer* LocalPlayer = LocalPlayers[i];
 
-			TSharedPtr<const FUniqueNetId> PlayerId = LocalPlayer->GetPreferredUniqueNetId();
+			TSharedPtr<const FUniqueNetId> PlayerId = LocalPlayer->GetPreferredUniqueNetId()->AsShared();
 			if (PlayerId.IsValid())
 			{
 				OnlineSub->SetUsingMultiplayerFeatures(*PlayerId, bIsOnline);
@@ -360,7 +360,7 @@ void UBRSGameInstance::HandleSessionUserInviteAccepted(const bool bWasSuccess, c
 	GotoState(EBRSGameInstanceState::PendingInvite);
 }
 
-void UBRSGameInstance::HandleNetworkConnectionStatusChanged(EOnlineServerConnectionStatus::Type LastConnectionStatus, EOnlineServerConnectionStatus::Type ConnectionStatus)
+void UBRSGameInstance::HandleNetworkConnectionStatusChanged(const FString& ServiceName, EOnlineServerConnectionStatus::Type LastConnectionStatus, EOnlineServerConnectionStatus::Type ConnectionStatus)
 {
 	UE_LOG(LogOnlineGame, Warning, TEXT("UBRSGameInstance::HandleNetworkConnectionStatusChanged: %s"), EOnlineServerConnectionStatus::ToString(ConnectionStatus));
 
@@ -967,7 +967,7 @@ void UBRSGameInstance::SetPresenceForLocalPlayers(const FVariantData& PresenceDa
 	{
 		for (int i = 0; i < LocalPlayers.Num(); ++i)
 		{
-			const TSharedPtr<const FUniqueNetId> UserId = LocalPlayers[i]->GetPreferredUniqueNetId();
+			const TSharedPtr<const FUniqueNetId> UserId = LocalPlayers[i]->GetPreferredUniqueNetId()->AsShared();
 
 			if (UserId.IsValid())
 			{
@@ -1404,7 +1404,8 @@ bool UBRSGameInstance::HostGame(class ULocalPlayer* LocalPlayer, const FString &
 
 			//determine map name from TravelURL
 			const FString& MapName = inMapName;
-			if (GameSession->HostSession(LocalPlayer->GetPreferredUniqueNetId(), GameSessionName, inGameMode, MapName, bIsLanMatch, true, ABRSGameSession::DEFAULT_NUM_PLAYERS, ServerDisplayName))
+			TSharedPtr<const FUniqueNetId> PlayerNetID = LocalPlayer->GetPreferredUniqueNetId()->AsShared();
+			if (GameSession->HostSession(PlayerNetID, GameSessionName, inGameMode, MapName, bIsLanMatch, true, ABRSGameSession::DEFAULT_NUM_PLAYERS, ServerDisplayName))
 			{
 				// todo: Check for pending state changes. If State is pending change don't do anything
 				ShowLoadingScreen();
@@ -1721,7 +1722,7 @@ bool UBRSGameInstance::JoinSession(ULocalPlayer* LocalPlayer, int32 SessionIndex
 		AddNetworkFailureHandlers();
 
 		OnJoinSessionCompleteDelegateHandle = GameSession->GetOnJoinSessionComplete().AddUObject(this, &UBRSGameInstance::OnJoinSessionComplete);
-		if (GameSession->JoinSession(LocalPlayer->GetPreferredUniqueNetId(), GameSessionName, SessionIndexInSearchResults))
+		if (GameSession->JoinSession(LocalPlayer->GetPreferredUniqueNetId()->AsShared(), GameSessionName, SessionIndexInSearchResults))
 		{
 			// If any error occured in the above, pending state would be set
 			if ((PendingState == CurrentState) || (PendingState == EBRSGameInstanceState::None))
@@ -1747,7 +1748,7 @@ bool UBRSGameInstance::JoinSession(ULocalPlayer* LocalPlayer, const FOnlineSessi
 		AddNetworkFailureHandlers();
 
 		OnJoinSessionCompleteDelegateHandle = GameSession->GetOnJoinSessionComplete().AddUObject(this, &UBRSGameInstance::OnJoinSessionComplete);
-		if (GameSession->JoinSession(LocalPlayer->GetPreferredUniqueNetId(), GameSessionName, SearchResult))
+		if (GameSession->JoinSession(LocalPlayer->GetPreferredUniqueNetId()->AsShared(), GameSessionName, SearchResult))
 		{
 			// If any error occured in the above, pending state would be set
 			if ((PendingState == CurrentState) || (PendingState == EBRSGameInstanceState::None))
@@ -1796,7 +1797,7 @@ bool UBRSGameInstance::FindSessions(ULocalPlayer* PlayerOwner, bool bLANMatch)
 			GameSession->GetOnFindSessionsComplete().RemoveAll(this);
 			OnSearchSessionsCompleteDelegateHandle = GameSession->GetOnFindSessionsComplete().AddUObject(this, &UBRSGameInstance::OnSearchSessionsComplete);
 
-			GameSession->FindSessions(PlayerOwner->GetPreferredUniqueNetId(), GameSessionName, bLANMatch, true);
+			GameSession->FindSessions(PlayerOwner->GetPreferredUniqueNetId()->AsShared(), GameSessionName, bLANMatch, true);
 			bResult = true;
 		}
 	}
@@ -1882,7 +1883,7 @@ void UBRSGameInstance::DisplayOnlinePrivilegeFailureDialogs(const FUniqueNetId& 
 	{
 		for (auto It = GEngine->GetLocalPlayerIterator(GetWorld()); It; ++It)
 		{
-			TSharedPtr<const FUniqueNetId> OtherId = (*It)->GetPreferredUniqueNetId();
+			TSharedPtr<const FUniqueNetId> OtherId = (*It)->GetPreferredUniqueNetId()->AsShared();
 			if (OtherId.IsValid())
 			{
 				if (UserId == (*OtherId))

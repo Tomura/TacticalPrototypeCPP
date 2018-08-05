@@ -9,6 +9,6 @@ UTacticalGadgetInterface::UTacticalGadgetInterface(const class FObjectInitialize
 : Super(ObjectInitializer)
 {
 }
-
-ETacticalGadgetType ITacticalGadgetInterface::GetGadgetType_Implementation() { return ETacticalGadgetType::Instant; };
+//
+//ETacticalGadgetType ITacticalGadgetInterface::GetGadgetType_Implementation() { return ETacticalGadgetType::Instant; };
 // Add default functionality here for any ITacticalGadgetInterface functions that are not pure virtual.

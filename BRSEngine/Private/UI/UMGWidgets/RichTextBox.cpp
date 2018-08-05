@@ -14,7 +14,7 @@ URichTextBox::URichTextBox(const FObjectInitializer& ObjectInitializer)
 	Color = FLinearColor::White;
 	LineHeightPercentage = 1;
 
-	Decorators.Add(ObjectInitializer.CreateOptionalDefaultSubobject<URichTextBlockDecorator>(this, FName("DefaultDecorator")));
+	//Decorators.Add(ObjectInitializer.CreateOptionalDefaultSubobject<URichTextBlockDecorator>(this, FName("DefaultDecorator")));
 }
 
 void URichTextBox::ReleaseSlateResources(bool bReleaseChildren)
@@ -53,7 +53,7 @@ TSharedRef<SWidget> URichTextBox::RebuildWidget()
 	{
 		if (Decorator)
 		{
-			CreatedDecorators.Add(Decorator->CreateDecorator(Font, Color));
+			//CreatedDecorators.Add(Decorator->CreateDecorator(this));
 		}
 	}
 

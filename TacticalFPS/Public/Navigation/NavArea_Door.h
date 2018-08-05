@@ -1,7 +1,7 @@
 // Copyright (c) 2015-2016, Tammo Beil - All rights reserved
 
 #pragma once
-#include "AI/Navigation/NavAreas/NavArea.h"
+#include "NavAreas/NavArea.h"
 #include "TacticalNavigationHelpers.h"
 #include "NavArea_Door.generated.h"
 

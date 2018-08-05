@@ -86,7 +86,7 @@ void UBRSSGOptionUMG::UsingCustomSettings()
 	FString SGName = GetScalabilityGroupName();
 	FString ScalabiltySection = FString::Printf(TEXT("%s@%d"), *SGName, GetQualityLevel());
 	//UE_LOG(LogTemp, Log, TEXT("Copying from %s"), *ScalabiltySection);
-	FString CustomScalabiltySection = FString::Printf(UBRSGameUserSettings::CustomScalabilitySection, *SGName);
+	FString CustomScalabiltySection = FString::Printf(CUSTOM_SCALABILITY, *SGName);
 
 	TArray<FString> SectionStrings;
 	GConfig->GetSection(*ScalabiltySection, SectionStrings, GScalabilityIni);

@@ -6,6 +6,8 @@
 #include "BRSSettingTypes.h"
 #include "BRSGameUserSettings.generated.h"
 
+#define CUSTOM_SCALABILITY TEXT("%s@Custom")
+
 
 /**
  * 

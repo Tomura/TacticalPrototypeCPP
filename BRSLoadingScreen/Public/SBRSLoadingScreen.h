@@ -8,19 +8,27 @@
 
 struct BRSLOADINGSCREEN_API FBRSGameLoadingScreenBrush : public FSlateDynamicImageBrush, public FGCObject
 {
+
+
 	FBRSGameLoadingScreenBrush(const FName InTextureName, const FVector2D& InImageSize)
 		: FSlateDynamicImageBrush(InTextureName, InImageSize)
 	{
-		ResourceObject = LoadObject<UObject>(NULL, *InTextureName.ToString());
+		SetResourceObject(LoadObject<UObject>(NULL, *InTextureName.ToString()));
+		MyResourceObject = GetResourceObject();
 	}
 
 	virtual void AddReferencedObjects(FReferenceCollector& Collector)
 	{
-		if (ResourceObject)
+		if (GetResourceObject())
 		{
-			Collector.AddReferencedObject(ResourceObject);
+			Collector.AddReferencedObject(MyResourceObject);
 		}
 	}
+
+
+public:
+	UPROPERTY()
+	UObject * MyResourceObject;
 };
 
 class BRSLOADINGSCREEN_API SBRSLoadingScreen2 : public SCompoundWidget

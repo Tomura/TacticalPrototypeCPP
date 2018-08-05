@@ -2,14 +2,15 @@
 
 #include "TacticalFPS.h"
 #include "ObjectEditorUtils.h"
+#include "NavigationSystem.h"
 #include "NavigationModifier.h"
 #include "Navigation/PathFollowingComponent.h"
-#include "AI/Navigation/NavLinkRenderingComponent.h"
-#include "AI/NavigationOctree.h"
+#include "NavLinkRenderingComponent.h"
+#include "NavigationOctree.h"
 #include "NavigationSystemHelpers.h"
 #include "TacticalVaultMarker.h"
 #include "NavArea_Vault.h"
-#include "AI/Navigation/NavAreas/NavArea_Default.h"
+#include "NavAreas/NavArea_Default.h"
 
 ATacticalVaultMarker::ATacticalVaultMarker()
 	: Super()
@@ -193,7 +194,7 @@ void ATacticalVaultMarker::UpdateBoxes()
 #endif
 
 	// maybe only WITH_EDITOR
-	UNavigationSystem* NavSys = UNavigationSystem::GetCurrent(GetWorld());
+	UNavigationSystemV1* NavSys = UNavigationSystemV1::GetCurrent(GetWorld());
 	if (NavSys)
 	{
 		NavSys->UpdateActorInNavOctree(*this);
@@ -290,7 +291,7 @@ void ATacticalVaultMarker::PostEditChangeProperty(FPropertyChangedEvent& Propert
 
 	if (bUpdateInNavOctree)
 	{
-		UNavigationSystem* NavSys = UNavigationSystem::GetCurrent(GetWorld());
+		UNavigationSystemV1* NavSys = UNavigationSystemV1::GetCurrent(GetWorld());
 		if (NavSys)
 		{
 			NavSys->UpdateActorInNavOctree(*this);

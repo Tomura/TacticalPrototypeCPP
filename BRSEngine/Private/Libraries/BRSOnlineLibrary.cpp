@@ -57,8 +57,7 @@ UTexture2D * UBRSOnlineLibrary::GetSteamFriendAvatar(const TSharedPtr<const FUni
 	{
 		//Getting the PictureID from the SteamAPI and getting the Size with the ID
 		//virtual bool RequestUserInformation( CSteamID steamIDUser, bool bRequireNameOnly ) = 0;
-
-
+		
 		uint64 id = *((uint64*)UniqueNetId->GetBytes());
 		int Picture = 0;
 
@@ -134,7 +133,7 @@ UTexture2D* UBRSOnlineLibrary::GetSteamLocalPlayerAvatar(ULocalPlayer* Player, E
 {
 	if (Player && Player->IsValidLowLevel())
 	{
-		TSharedPtr<const FUniqueNetId> UniqueNetId = Player->GetUniqueNetIdFromCachedControllerId();
+		TSharedPtr<const FUniqueNetId> UniqueNetId = Player->GetUniqueNetIdFromCachedControllerId()->AsShared();
 		return GetSteamFriendAvatar(UniqueNetId, AvatarSize);
 	}
 	return nullptr;
@@ -189,6 +188,7 @@ void UBRSOnlineLibrary::GetSessionDisplayName(const FBlueprintSessionResult& Ses
 {
 	if (Session.OnlineResult.IsValid())
 	{
-		Session.OnlineResult.Session.SessionSettings.Get(SETTING_CUSTOM, DisplayName);
+		//Session.OnlineResult.Session.SessionSettings.Get(SETTING_CUSTOM, DisplayName);
+		DisplayName = FString(TEXT("Some server"));
 	}
 }

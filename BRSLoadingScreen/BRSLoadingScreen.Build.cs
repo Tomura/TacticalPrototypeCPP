@@ -8,7 +8,7 @@ public class BRSLoadingScreen : ModuleRules
 {
     public BRSLoadingScreen(ReadOnlyTargetRules Target) : base(Target)
 	{
-		PrivateIncludePaths.Add("../../ShooterGame/Source/BRSLoadingScreen/Private");
+		PrivateIncludePaths.Add("../../TacticalFPS/Source/BRSLoadingScreen/Private");
 
         PrivateDependencyModuleNames.AddRange(
 			new string[] {

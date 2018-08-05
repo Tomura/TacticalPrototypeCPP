@@ -543,7 +543,7 @@ public:
 	void ToggleWeaponGadget2();
 
 	UFUNCTION(Category = Controls, BlueprintCallable)
-	void Jump();
+	void TacticalJump();
 
 	bool CanSwitchWeapon() const;
 

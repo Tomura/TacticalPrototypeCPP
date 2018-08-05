@@ -5,6 +5,7 @@
 #include "BRSCVarCollectionUMG.h"
 #include "BRSGameUserSettings.h"
 
+
 UBRSCVarCollectionUMG::UBRSCVarCollectionUMG(const FObjectInitializer& ObjectInitializer)
 	:Super(ObjectInitializer)
 {
@@ -35,7 +36,8 @@ void UBRSCVarCollectionUMG::SetCVarInt(FString Name, int32 Value, bool bSave)
 		{
 			SGWidget->UsingCustomSettings();
 			FString SGName = SGWidget->GetScalabilityGroupName();
-			FString CustomScalabiltySection = FString::Printf(UBRSGameUserSettings::CustomScalabilitySection, *SGName);
+			//FString CustomScalabiltySection = FString::Printf(UBRSGameUserSettings::CustomScalabilitySection, *SGName);
+			FString CustomScalabiltySection = FString::Printf(CUSTOM_SCALABILITY, *SGName);
 			GConfig->SetInt(*CustomScalabiltySection, *Name, Value, GGameUserSettingsIni);
 		}
 		CVar->Set(Value, ECVF_SetByScalability);
@@ -51,7 +53,7 @@ void UBRSCVarCollectionUMG::SetCVarBool(FString Name, bool Value, bool bSave)
 		{
 			SGWidget->UsingCustomSettings();
 			FString SGName = SGWidget->GetScalabilityGroupName();
-			FString CustomScalabiltySection = FString::Printf(UBRSGameUserSettings::CustomScalabilitySection, *SGName);
+			FString CustomScalabiltySection = FString::Printf(CUSTOM_SCALABILITY, *SGName);
 			GConfig->SetBool(*CustomScalabiltySection, *Name, Value, GGameUserSettingsIni);
 		}
 		CVar->Set(Value, ECVF_SetByScalability);
@@ -67,7 +69,7 @@ void UBRSCVarCollectionUMG::SetCVarFloat(FString Name, float Value, bool bSave)
 		{
 			SGWidget->UsingCustomSettings();
 			FString SGName = SGWidget->GetScalabilityGroupName();
-			FString CustomScalabiltySection = FString::Printf(UBRSGameUserSettings::CustomScalabilitySection, *SGName);
+			FString CustomScalabiltySection = FString::Printf(CUSTOM_SCALABILITY, *SGName);
 			GConfig->SetFloat(*CustomScalabiltySection, *Name, Value, GGameUserSettingsIni);
 		}
 		CVar->Set(Value, ECVF_SetByScalability);

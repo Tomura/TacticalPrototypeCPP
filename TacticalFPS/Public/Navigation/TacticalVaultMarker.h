@@ -2,7 +2,7 @@
 
 #pragma once
 #include "AI/Navigation/NavLinkDefinition.h"
-#include "AI/Navigation/NavLinkHostInterface.h"
+#include "NavLinkHostInterface.h"
 #include "AI/Navigation/NavRelevantInterface.h"
 #include "GameFramework/Actor.h"
 #include "TacticalVaultMarker.generated.h"

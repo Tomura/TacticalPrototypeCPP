@@ -35,7 +35,7 @@ public:
 
 protected:
 	UPROPERTY(Category = "Interaction", BlueprintReadOnly)
-	TScriptInterface<IBRSCharacterInteractionInterface> InteractableActor;
+	TScriptInterface<class IBRSCharacterInteractionInterface> InteractableActor;
 	
 
 

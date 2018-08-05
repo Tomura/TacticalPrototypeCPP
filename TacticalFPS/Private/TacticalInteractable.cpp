@@ -34,7 +34,8 @@ void ATacticalInteractable::BeginPlay()
 				if (Widget)
 				{
 					TooltipWidget = Widget;
-					TooltipWidget->InteractableActor = this;
+					TooltipWidget->InteractableActor.SetObject(this);
+					TooltipWidget->InteractableActor.SetInterface(this);
 					//UE_LOG(LogTemp, Log, TEXT("Widget Found"));
 				}
 			}

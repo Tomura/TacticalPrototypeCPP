@@ -13,6 +13,7 @@ public class TacticalFPS : ModuleRules
                 "CoreUObject", 
                 "Engine", 
                 "BRSEngine",
+                "NavigationSystem",
                 "AIModule",
                 "InputCore",
                 "RHI", 

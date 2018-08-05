@@ -1,7 +1,7 @@
 // Copyright (c) 2015-2016, Tammo Beil - All rights reserved
 
 #pragma once
-#include "AI/Navigation/RecastNavMesh.h"
+#include "NavMesh/RecastNavMesh.h"
 #include "TacticalNavigationHelpers.generated.h"
 
 // can hold up to 16 Flags (Default = 0)

@@ -2,7 +2,7 @@
 
 #include "TacticalFPS.h"
 
-#include "AI/Navigation/NavigationSystem.h"
+#include "NavigationSystem.h"
 	
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISense.h"
@@ -522,7 +522,7 @@ bool ATacticalAIController::GetBestDamageOrigin(FVector& OutVector, float MaxCos
 			{
 				// We hit something. So we can't just shoot and attack. See if walking is worth it.
 				float Cost = -1.f;
-				ENavigationQueryResult::Type NavResult = UNavigationSystem::GetPathCost(GetWorld(), GetPawn()->GetActorLocation(), Loc, Cost);
+				ENavigationQueryResult::Type NavResult = UNavigationSystemV1::GetPathCost(GetWorld(), GetPawn()->GetActorLocation(), Loc, Cost);
 
 				if (NavResult == ENavigationQueryResult::Success && Cost <= MaxCost && Cost >= 0.f)
 				{
@@ -567,7 +567,7 @@ bool ATacticalAIController::GetBestHearingOrigin(FVector& OutVector, float MaxCo
 			{
 				// We hit something. So we can't just shoot and attack. See if walking is worth it.
 				float Cost = -1.f;
-				ENavigationQueryResult::Type NavResult = UNavigationSystem::GetPathCost(GetWorld(), GetPawn()->GetActorLocation(), Loc, Cost, nullptr, HearingNavQueryFilter);
+				ENavigationQueryResult::Type NavResult = UNavigationSystemV1::GetPathCost(GetWorld(), GetPawn()->GetActorLocation(), Loc, Cost, nullptr, HearingNavQueryFilter);
 
 				if (NavResult == ENavigationQueryResult::Success && Cost <= MaxCost && Cost >= 0.f)
 				{
@@ -608,7 +608,7 @@ bool ATacticalAIController::GetBestTeamOrigin(FVector& OutVector, float MaxCost,
 			{
 				// We hit something. So we can't just shoot and attack. See if walking is worth it.
 				float Cost = -1.f;
-				ENavigationQueryResult::Type NavResult = UNavigationSystem::GetPathCost(GetWorld(), GetPawn()->GetActorLocation(), Loc, Cost, nullptr, HearingNavQueryFilter);
+				ENavigationQueryResult::Type NavResult = UNavigationSystemV1::GetPathCost(GetWorld(), GetPawn()->GetActorLocation(), Loc, Cost, nullptr, HearingNavQueryFilter);
 
 				if (NavResult == ENavigationQueryResult::Success && Cost <= MaxCost && Cost >= 0.f)
 				{

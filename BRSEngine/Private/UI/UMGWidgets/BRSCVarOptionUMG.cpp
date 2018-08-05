@@ -21,7 +21,7 @@ void UBRSCVarOptionUMG::SetCVarInt(FString Name, int32 Value, bool bSave)
 		{
 			SGWidget->UsingCustomSettings();
 			FString SGName = SGWidget->GetScalabilityGroupName();
-			FString CustomScalabiltySection = FString::Printf(UBRSGameUserSettings::CustomScalabilitySection, *SGName);
+			FString CustomScalabiltySection = FString::Printf(CUSTOM_SCALABILITY, *SGName);
 			GConfig->SetInt(*CustomScalabiltySection, *Name, Value, GGameUserSettingsIni);
 		}
 		//GetOwningLocalPlayer()->ViewportClient->ConsoleCommand(FString::Printf(TEXT("%s %d"), *Name, Value));
@@ -44,7 +44,7 @@ void UBRSCVarOptionUMG::SetCVarBool(FString Name, bool Value, bool bSave)
 		{
 			SGWidget->UsingCustomSettings();
 			FString SGName = SGWidget->GetScalabilityGroupName();
-			FString CustomScalabiltySection = FString::Printf(UBRSGameUserSettings::CustomScalabilitySection, *SGName);
+			FString CustomScalabiltySection = FString::Printf(CUSTOM_SCALABILITY, *SGName);
 			GConfig->SetBool(*CustomScalabiltySection, *Name, Value, GGameUserSettingsIni);
 		}
 		//GetOwningLocalPlayer()->ViewportClient->ConsoleCommand(FString::Printf(TEXT("%s %d"), *Name, Value));
@@ -66,7 +66,7 @@ void UBRSCVarOptionUMG::SetCVarFloat(FString Name, float Value, bool bSave)
 		{
 			SGWidget->UsingCustomSettings();
 			FString SGName = SGWidget->GetScalabilityGroupName();
-			FString CustomScalabiltySection = FString::Printf(UBRSGameUserSettings::CustomScalabilitySection, *SGName);
+			FString CustomScalabiltySection = FString::Printf(CUSTOM_SCALABILITY, *SGName);
 			GConfig->SetFloat(*CustomScalabiltySection, *Name, Value, GGameUserSettingsIni);
 		}
 		//GetOwningLocalPlayer()->ViewportClient->ConsoleCommand(FString::Printf(TEXT("%s %f"), *Name, Value));

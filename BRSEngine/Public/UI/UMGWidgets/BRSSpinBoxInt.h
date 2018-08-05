@@ -31,7 +31,7 @@ struct FUnitTextNumericType : TDefaultNumericTypeInterface<int32>
 			ValueString.RemoveFromEnd(UnitText->ToString());
 		}
 		int32 NewValue;
-		bool bEvalResult = LexicalConversion::TryParseString(NewValue, *ValueString);
+		bool bEvalResult = LexTryParseString(NewValue, *ValueString);
 		if (!bEvalResult)
 		{
 			float FloatValue = 0.f;

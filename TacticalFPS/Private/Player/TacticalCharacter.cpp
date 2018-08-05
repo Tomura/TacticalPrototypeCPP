@@ -1540,7 +1540,7 @@ void ATacticalCharacter::LookUpAtRate(float Rate)
 }
 
 // Jump (DEPRECATED?)
-void ATacticalCharacter::Jump()
+void ATacticalCharacter::TacticalJump()
 {
 	ServerJump();
 }

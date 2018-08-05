@@ -21,6 +21,7 @@ public class BRSEngine : ModuleRules
                 "SlateCore", 
                 "UMG",
                 "AnimGraphRuntime",
+                "NavigationSystem",
                 "AIModule",
                 "AssetRegistry",
                 "GameplayTasks"

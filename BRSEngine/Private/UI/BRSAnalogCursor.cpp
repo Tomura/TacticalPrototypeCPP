@@ -43,8 +43,9 @@ void FBRSAnalogCursor::DisableAnalogCursor(class APlayerController* PC)
 	{
 		if (FSlateApplication::IsInitialized())
 		{
-			FSlateApplication::Get().UnregisterAllInputPreProcessors();
+			FSlateApplication::Get().UnregisterInputPreProcessor(GetMutableDefault<UBRSAnalogCursorSettings>()->GetAnalogCursor());
 			FSlateApplication::Get().SetCursorRadius(0.0f);
+
 		}
 
 		FInputModeGameOnly NewInputMode;

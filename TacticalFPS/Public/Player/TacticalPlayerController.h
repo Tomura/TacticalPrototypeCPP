@@ -70,8 +70,9 @@ public:
 
 
 	void ToggleMenu();
-	UFUNCTION(Category = "HUD", BlueprintCallable)
-	virtual void ShowPauseMenu(bool bShow);
+
+	//UFUNCTION(BlueprintCallable, Category = BRSPlayerController)
+	virtual void ShowPauseMenu(bool bShow) override;
 
 
 	UFUNCTION(BlueprintCallable, Category = "Player")

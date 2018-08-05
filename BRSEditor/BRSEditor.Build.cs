@@ -16,6 +16,7 @@ public class BRSEditor : ModuleRules
                 "CoreUObject", 
                 "Engine", 
                 "InputCore", 
+                "NavigationSystem",
                 "AIModule",
                 "OnlineSubsystem",
                 "OnlineSubsystemUtils",
