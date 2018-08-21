@@ -899,7 +899,7 @@ void ATacticalCharacter::PossessedBy(AController* NewController)
 void ATacticalCharacter::GetActorEyesViewPoint(FVector& Location, FRotator& Rotation) const
 {
 	Rotation = GetControlRotation();
-	Location = GetFirstPersonCamera()->GetComponentLocation();
+	Location = GetFirstPersonCamera() ? GetFirstPersonCamera()->GetComponentLocation() : GetActorLocation()+FVector::UpVector*50.f;
 
 	// in low cover allow more
 	if (IsInLowCover())

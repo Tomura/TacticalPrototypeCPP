@@ -7,6 +7,8 @@
 #include "TacticalWeaponStateFiring.h"
 #include "TacticalPlayerController.h"
 #include "TacticalAmmoType.h"
+#include "TacticalProjectile.h"
+#include "TacticalBulletProjectile.h"
 
 
 UTacticalWeaponStateFiring::UTacticalWeaponStateFiring()
@@ -126,11 +128,17 @@ void UTacticalWeaponStateFiring::FireInstant()
 
 		// Apply Damage, allow one penetration
 		// First Hit
-		for (int32 NumPenetrations = 0; NumPenetrations < (AmmoCDO->AllowsSurfacePenetration() ? 2 : 1); NumPenetrations++)
+		const int32 LastPene = (AmmoCDO->AllowsSurfacePenetration() ? 2 : 1);
+		for (int32 NumPenetrations = 0; NumPenetrations < LastPene; NumPenetrations++)
 		{
 			if (Hits.IsValidIndex(NumPenetrations))
 			{
 				GetWeapon()->ApplyDamage(Hits[NumPenetrations], TraceDir, NumPenetrations);
+
+				if(NumPenetrations == Hits.Num()-1)
+				{
+					OnRicochet(Hits[NumPenetrations], TraceDir);
+				}
 			}
 		}
 	}
@@ -313,6 +321,41 @@ bool UTacticalWeaponStateFiring::ShouldRefire() const
 TSubclassOf<class UTacticalAmmoType> UTacticalWeaponStateFiring::GetAmmoType() const
 {
 	return GetWeapon()->AmmoType;
+}
+
+void UTacticalWeaponStateFiring::OnRicochet(const FHitResult& Hit, const FVector& TraceDir)
+{
+	if (GetOwnerRole() == ROLE_Authority)
+	{
+		if (!GetAmmoType()) // if no Ammo type set -> return
+			return;
+		
+
+		const UTacticalAmmoType* AmmoCDO = GetAmmoType()->GetDefaultObject<UTacticalAmmoType>();
+		if (!AmmoCDO->DoesRicochet(Hit) || !AmmoCDO->GetRicochetProjectile())
+			return;
+
+		//int32 RandomSeed = int32(RAND_MAX * GetWeapon()->RandomSpreadStream.FRand());
+		//FRandomStream WeaponRandomStream(RandomSeed);
+		const float ImpactAngle = FMath::RadiansToDegrees(FMath::Acos(-TraceDir | Hit.ImpactNormal)); // Range 0 - 180°
+
+		if (ImpactAngle < AmmoCDO->GetRicochetAngleThreshold())
+			return;
+
+		const FVector RicochetDirBase = FMath::GetReflectionVector(TraceDir, Hit.ImpactNormal);
+		//const FVector RicochetDir = WeaponRandomStream.VRandCone(RicochetDirBase, 10.f);
+
+
+		const FVector SpawnLoc(Hit.ImpactPoint.X, Hit.ImpactPoint.Y, Hit.ImpactPoint.Z);
+		const FRotator SpawnRot = RicochetDirBase.Rotation();
+		ATacticalBulletProjectile* NewBullet = GetWorld()->SpawnActorDeferred<ATacticalBulletProjectile>(AmmoCDO->GetRicochetProjectile(), FTransform(SpawnRot, SpawnLoc), GetWeapon(), GetInventoryOwner(),
+			ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn);
+		if (NewBullet)
+		{
+			NewBullet->AmmoType = GetAmmoType();
+			NewBullet->FinishSpawning(FTransform(SpawnRot, SpawnLoc));
+		}
+	}
 }
 
 void UTacticalWeaponStateFiring::Reload()

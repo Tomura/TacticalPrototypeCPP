@@ -125,6 +125,12 @@ public:
 	UParticleSystemComponent* BP_GetMuzzleFlashParticle() const;
 	virtual UParticleSystemComponent* BP_GetMuzzleFlashParticle_Implementation() const { return nullptr; }
 
+
+	UFUNCTION(Category = "Weapon", BlueprintCallable, BlueprintNativeEvent)
+	TArray<UMeshComponent*> GetAdditionalMeshes() const;
+	TArray<UMeshComponent*> GetAdditionalMeshes_Implementation() const { TArray<UMeshComponent*> Result; Result.Empty(); return Result; }
+
+	 
 	//////////////////////////
 	// Getters/Stats
 
@@ -695,19 +701,9 @@ protected:
 	float BulletEjectDelay;
 
 	TSubclassOf<class UTacticalAmmoType> AmmoType;
-	// TArray<ATacticalWeaponPeripheral> AllowedPeripherals; // SoundSupressors, HiCapMag, etc
-
 
 
 	// Attachments
-
-	UPROPERTY(Category = "Attachments", BlueprintReadOnly, EditDefaultsOnly)
-	TArray<TSubclassOf<class ATacticalWeaponAttachment_Special> > AllowedSpecialAttachments;
-
-
-	UPROPERTY(Category = "Attachments", BlueprintReadOnly)
-	class ATacticalWeaponAttachment_Special* AttachmentSpecial;
-
 	UFUNCTION(BlueprintNativeEvent, Category = Weapon)
 	void RemoveIronSight();
 	virtual void RemoveIronSight_Implementation() {}

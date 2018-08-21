@@ -147,12 +147,28 @@ class ATacticalWeapon* ATacticalWeaponPreviewScene::SpawnPreviewWeapon(TSubclass
 		NewWeapon->SetReplicates(false);
 		NewWeapon->SetReplicateMovement(false);
 		NewWeapon->SetTickableWhenPaused(true);
+
+
+
 		USkeletalMeshComponent* MeshAsset = NewWeapon->GetMesh();
 		MeshAsset->SetRelativeTransform(NewWeapon->PreviewTransform);
 		MeshAsset->LightingChannels.bChannel0 = false;
 		MeshAsset->LightingChannels.bChannel1 = false;
 		MeshAsset->LightingChannels.bChannel2 = true;
+
 		NewWeapon->FinishSpawning(SpawnTramsform);
+		{
+			TArray<UActorComponent*> Meshes = NewWeapon->GetComponentsByClass(UMeshComponent::StaticClass());
+			for (UActorComponent* TestComp : Meshes)
+			{
+				if (UMeshComponent* TestMesh = Cast<UMeshComponent>(TestComp))
+				{
+					TestMesh->LightingChannels.bChannel0 = false;
+					TestMesh->LightingChannels.bChannel1 = false;
+					TestMesh->LightingChannels.bChannel2 = true;
+				}
+			}
+		}
 		NewWeapon->AttachToComponent(this->WeaponScene, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, false));
 		NewWeapon->SetActorRelativeLocation(NewWeapon->PreviewTransform.GetLocation(), false);
 		NewWeapon->GetMesh()->ForcedLodModel = 1; // Force to LOD 0 (ForcedLodModel -1)

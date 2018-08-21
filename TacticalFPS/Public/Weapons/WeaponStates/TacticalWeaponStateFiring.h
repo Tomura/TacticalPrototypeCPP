@@ -57,9 +57,11 @@ public:
 	FSimulateFireEvent& GetSimulateFireEvent() { return SimulateFireEvent; }
 	FSimulateEmptyEvent& GetSimulateEmptyEvent() { return SimulateEmptyEvent; }
 
-
+	UFUNCTION(Category = "Weapon", BlueprintCallable)
 	virtual int32 GetShotCount() const { return ShotCount; }
 	TSubclassOf<class UTacticalAmmoType> GetAmmoType() const;
+
+	virtual void OnRicochet(const FHitResult& Hit, const FVector& TraceDir);
 
 protected:
 	FTimerHandle TimerRefire;

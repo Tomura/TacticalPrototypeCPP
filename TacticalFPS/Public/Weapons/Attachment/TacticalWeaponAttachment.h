@@ -185,6 +185,8 @@ protected:
 		float AimedFarBlurSizeMod;
 	UPROPERTY(Category = "Depth of Field", EditDefaultsOnly, meta = (EditCondition = "bModifyDepthOfField"))
 		float AimedFocusDistanceMod;
+	UPROPERTY(Category = "Depth of Field", EditDefaultsOnly, meta = (EditCondition = "bModifyDepthOfField"))
+		float AimedFStop;
 
 };
 

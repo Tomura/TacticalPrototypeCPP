@@ -12,10 +12,10 @@ UCLASS(abstract, Blueprintable)
 class TACTICALFPS_API UTacticalAmmoType : public UObject
 {
 	GENERATED_BODY()
-	
+
 public:
 	UTacticalAmmoType();
-	
+
 	float GetDamage() const { return Damage; }
 	TSubclassOf<UDamageType> GetDamageType() const { return DamageType; }
 	float GetArmorPenetration() const { return ArmorPenetration; }
@@ -28,9 +28,9 @@ public:
 
 	// These are both public so you can access them with the class-defaults node. Needs a better solution (probably more native code)
 	UPROPERTY(Category = "Ammo", EditDefaultsOnly, BlueprintReadOnly)
-	class UStaticMesh* PreviewBoxMesh;
+		class UStaticMesh* PreviewBoxMesh;
 	UPROPERTY(Category = "Ammo", EditDefaultsOnly, BlueprintReadOnly)
-	class UStaticMesh* PreviewBulletMesh;
+		class UStaticMesh* PreviewBulletMesh;
 
 	UPROPERTY(Category = "Ammo", EditDefaultsOnly, BlueprintReadOnly)
 		class UParticleSystem* BulletEjectParticle;
@@ -39,13 +39,21 @@ public:
 		class USoundBase* BulletDropSound;
 
 	UFUNCTION(Category = Ammo, BlueprintNativeEvent, BlueprintCallable, BlueprintPure)
-	class USoundBase* GetBulletDropSound(EPhysicalSurface SurfaceType) const;
+		class USoundBase* GetBulletDropSound(EPhysicalSurface SurfaceType) const;
 	class USoundBase* GetBulletDropSound_Implementation(EPhysicalSurface SurfaceType) const { return nullptr; }
 
 	UPROPERTY(Category = "Ammo", EditDefaultsOnly, BlueprintReadOnly)
-	FText AmmoDisplayName;
+		FText AmmoDisplayName;
 
 	TSubclassOf<class ATacticalImpactFX> GetImpactEffect() const { return ImpactEffect; }
+
+	UFUNCTION(Category = Ammo, BlueprintNativeEvent)
+	bool DoesRicochet(const FHitResult& Hit) const;
+	virtual bool DoesRicochet_Implementation(const FHitResult& Hit) const { return bRicochet; }
+
+	float GetRicochetAngleThreshold() const { return RicochetAngleThreshold; }
+	TSubclassOf<class ATacticalProjectile> GetRicochetProjectile() const { return RicochetProjectile; }
+
 
 protected:
 	UPROPERTY(Category = Ammo, EditDefaultsOnly)
@@ -63,11 +71,20 @@ protected:
 	float SurfacePenetrationDamageModifier;
 
 	UPROPERTY(Category = Ammo, EditDefaultsOnly)
-	uint32 bIsBuckshot : 1;
+		uint32 bIsBuckshot : 1;
 	UPROPERTY(Category = Ammo, EditDefaultsOnly, meta = (EditCondition = "bIsBuckshot"))
-	int32 NumBuckshots;
+		int32 NumBuckshots;
 	UPROPERTY(Category = Ammo, EditDefaultsOnly, meta = (EditCondition = "bIsBuckshot"))
-	float ScatterAngle;
+		float ScatterAngle;
+
+	UPROPERTY(Category = Ammo, EditDefaultsOnly)
+	uint32 bRicochet : 1;
+	UPROPERTY(Category = Ammo, EditDefaultsOnly, meta = (EditCondition = "bRicochet"))
+	float RicochetAngleThreshold;
+	UPROPERTY(Category = Ammo, EditDefaultsOnly, meta = (EditCondition = "bRicochet"))
+	TSubclassOf<class ATacticalProjectile> RicochetProjectile;
+
+
 
 	UPROPERTY(Category = Ammo, EditDefaultsOnly)
 		TSubclassOf<class ATacticalImpactFX> ImpactEffect;

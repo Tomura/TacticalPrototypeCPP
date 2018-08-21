@@ -21,6 +21,7 @@ ATacticalProjectile::ATacticalProjectile()
 	
 	MovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement"));
 	MovementComponent->SetUpdatedComponent(ProjectileCollision);
+	ProjectileCollision->bReturnMaterialOnMove = true;
 
 	SetReplicates(true);
 	SetReplicateMovement(true);

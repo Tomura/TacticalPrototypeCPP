@@ -556,7 +556,7 @@ bool FSavedMove_TacticalCharacter::IsImportantMove(const FSavedMovePtr& LastAcke
 		return true;
 	}
 
-	if (MovementMode != LastAckedMove->MovementMode)
+	if (EndPackedMovementMode != LastAckedMove->EndPackedMovementMode)
 	{
 		return true;
 	}

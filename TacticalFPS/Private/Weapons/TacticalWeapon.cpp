@@ -38,6 +38,8 @@
 #include "TacticalRecoilCurve.h"
 #include "Perception/AISense_Hearing.h"
 
+#include "TacticalWeaponPreviewScene.h"
+
 #define STATE_Inactive	 0
 #define STATE_Active	 1
 #define STATE_Firing	 2
@@ -1149,7 +1151,6 @@ float ATacticalWeapon::GetSpreadRegeneration() const
 	// todo: use stats + attachment to calculate this value
 	const ATacticalWeaponAttachment_Muzzle* Muzzle = GetMuzzleAttachment();
 	float SpreadRegenMod = Muzzle ? Muzzle->GetSpreadRegenerationModifier() : 1.f;
-	SpreadRegenMod *= AttachmentSpecial ? AttachmentSpecial->GetSpreadRegenerationModifier() : 1.f;
 	return SpreadRecovery;
 }
 
@@ -1161,9 +1162,6 @@ float ATacticalWeapon::GetSpreadIncrement() const
 
 FVector2D ATacticalWeapon::GetRecoil() const
 {
-	//const ATacticalWeaponAttachment_Muzzle* Muzzle = GetMuzzleAttachment();
-	//float RecoilMod = Muzzle ? Muzzle->GetRecoilModifier() : 1.f;
-	//RecoilMod *= AttachmentSpecial ? AttachmentSpecial->GetRecoilModifier() : 1.f;
 	return BaseRecoil;
 }
 
@@ -1596,6 +1594,24 @@ class ATacticalWeaponAttachment* ATacticalWeapon::CreateAttachment(UTacticalWeap
 			{
 				SpawnedAttachment->SetTickableWhenPaused(true);
 				SpawnedAttachment->FinishSpawning(FTransform());
+			
+
+				if (GetOwner() && GetOwner()->GetClass() 
+					&& GetOwner()->GetClass()->IsChildOf(ATacticalWeaponPreviewScene::StaticClass()))
+				{
+					TArray<UActorComponent*> Meshes = SpawnedAttachment->GetComponentsByClass(UMeshComponent::StaticClass());
+					for (UActorComponent* TestComp : Meshes)
+					{
+						if (UMeshComponent* TestMesh = Cast<UMeshComponent>(TestComp))
+						{
+							TestMesh->SetVisibility(false);
+							TestMesh->LightingChannels.bChannel0 = false;
+							TestMesh->LightingChannels.bChannel1 = false;
+							TestMesh->LightingChannels.bChannel2 = true;
+							TestMesh->SetVisibility(true);
+						}
+					}
+				}
 			}
 
 			if (SpawnedAttachment != nullptr)

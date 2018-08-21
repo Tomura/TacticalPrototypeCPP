@@ -27,7 +27,7 @@ void UBRSGameViewportClient::NotifyPlayerAdded(int32 PlayerIndex, ULocalPlayer* 
 
 void UBRSGameViewportClient::AddViewportWidgetContent(TSharedRef<class SWidget> ViewportContent, const int32 ZOrder)
 {
-	UE_LOG(LogPlayerManagement, Log, TEXT("UBRSGameViewportClient::AddViewportWidgetContent: %p"), &ViewportContent.Get());
+	//UE_LOG(LogPlayerManagement, Log, TEXT("UBRSGameViewportClient::AddViewportWidgetContent: %p"), &ViewportContent.Get());
 
 	//if ((DialogWidget.IsValid() || LoadingScreenWidget.IsValid()) && ViewportContent != DialogWidget && ViewportContent != LoadingScreenWidget)
 	if ((LoadingScreenWidget.IsValid()) && ViewportContent != LoadingScreenWidget)
@@ -49,7 +49,7 @@ void UBRSGameViewportClient::AddViewportWidgetContent(TSharedRef<class SWidget> 
 
 void UBRSGameViewportClient::RemoveViewportWidgetContent(TSharedRef<class SWidget> ViewportContent)
 {
-	UE_LOG(LogPlayerManagement, Log, TEXT("UBRSGameViewportClient::RemoveViewportWidgetContent: %p"), &ViewportContent.Get());
+	//UE_LOG(LogPlayerManagement, Log, TEXT("UBRSGameViewportClient::RemoveViewportWidgetContent: %p"), &ViewportContent.Get());
 
 	ViewportContentStack.Remove(ViewportContent);
 	HiddenViewportContentStack.Remove(ViewportContent);

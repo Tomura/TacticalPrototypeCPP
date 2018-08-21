@@ -6,6 +6,7 @@
 #include "TacticalCharacter.h"
 #include "TacticalPlayerController.h"
 #include "GameFramework/GameUserSettings.h"
+#include "BRSGameUserSettings.h"
 
 
 ATacticalWeaponAttachment::ATacticalWeaponAttachment(const FObjectInitializer& OI)
@@ -284,20 +285,41 @@ void ATacticalWeaponAttachment_Sight::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	ATacticalCharacter* myChar  = GetCharacterOwner();
-	if (bModifyDepthOfField && myChar != nullptr && IsFirstPerson())
+	ATacticalCharacter* myChar = GetCharacterOwner();
+
+	if (myChar != nullptr && IsFirstPerson() && myChar->GetWeapon() == GetWeaponOwner())
 	{
 		const float ADS_alpha = (GetWeaponOwner() == myChar->GetWeapon()) ? myChar->GetADSState() : 0.f;
 		const FPostProcessSettings& DefaultPlayerPostProcess = GetDefault<ATacticalCharacter>(myChar->GetClass())->GetFirstPersonCamera()->PostProcessSettings;
 		FPostProcessSettings& PlayerPostProcess = myChar->GetFirstPersonCamera()->PostProcessSettings;
 
-		const float ppalpha		= FMath::InterpEaseInOut(0.f, 1.f, ADS_alpha, 3);
-		const float FarBlur		= DefaultPlayerPostProcess.DepthOfFieldFarBlurSize	 + FMath::FloorToFloat(FMath::Lerp(0.f, AimedFarBlurSizeMod,  ppalpha));
-		const float NearBlur	= DefaultPlayerPostProcess.DepthOfFieldNearBlurSize  + FMath::FloorToFloat(FMath::Lerp(0.f, AimedNearBlurSizeMod, ppalpha));
-		const float Focus		= DefaultPlayerPostProcess.DepthOfFieldFocalDistance + FMath::FloorToFloat(FMath::Lerp(0.f, AimedFocusDistanceMod,  ppalpha));
+		const float ppalpha = FMath::InterpEaseInOut(0.f, 1.f, ADS_alpha, 3);
 
-		PlayerPostProcess.DepthOfFieldFarBlurSize = FarBlur;
-		PlayerPostProcess.DepthOfFieldNearBlurSize = NearBlur;
-		PlayerPostProcess.DepthOfFieldFocalDistance = Focus;
+		if (bModifyDepthOfField)
+		{
+			//const float FarBlur		= DefaultPlayerPostProcess.DepthOfFieldFarBlurSize	 + FMath::FloorToFloat(FMath::Lerp(0.f, AimedFarBlurSizeMod,  ppalpha));
+			//const float NearBlur	= DefaultPlayerPostProcess.DepthOfFieldNearBlurSize  + FMath::FloorToFloat(FMath::Lerp(0.f, AimedNearBlurSizeMod, ppalpha));
+			//const float Focus		= DefaultPlayerPostProcess.DepthOfFieldFocalDistance + FMath::Lerp(0.f, AimedFocusDistanceMod,  ppalpha);
+
+			const float deltadistance = AimedFocusDistanceMod - DefaultPlayerPostProcess.DepthOfFieldFocalDistance;
+			const float Focus = DefaultPlayerPostProcess.DepthOfFieldFocalDistance + FMath::Lerp(0.f, deltadistance, ppalpha);
+
+			const float deltafstop = AimedFStop - DefaultPlayerPostProcess.DepthOfFieldFstop;
+			const float Fstop = DefaultPlayerPostProcess.DepthOfFieldFstop + FMath::Lerp(0.f, deltafstop, ppalpha);
+
+			//PlayerPostProcess.DepthOfFieldFarBlurSize = FarBlur;
+			//PlayerPostProcess.DepthOfFieldNearBlurSize = NearBlur;
+			PlayerPostProcess.DepthOfFieldFocalDistance = Focus;
+			PlayerPostProcess.DepthOfFieldFstop = Fstop;
+				
+		}
+		//IConsoleManager& ConsoleManager = IConsoleManager::Get();
+		//if (IConsoleVariable* CVar = ConsoleManager.FindConsoleVariable(TEXT("r.MotionBlur.Scale")))
+		//{
+		//	CVar->Set(MotionBlurScale, ECVF_SetByScalability);
+		//}
+		const float defaultBlur = DefaultPlayerPostProcess.MotionBlurAmount;
+		const float newMotionBlur = FMath::Lerp(defaultBlur, defaultBlur*0.25f, ppalpha);
+		PlayerPostProcess.MotionBlurAmount = newMotionBlur;
 	}
 }
