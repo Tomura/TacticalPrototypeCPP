@@ -88,6 +88,7 @@ void UBRSGameViewportClient::ShowExistingWidgets()
 	HiddenViewportContentStack.Empty();
 }
 
+
 //void UShooterGameViewportClient::ShowDialog(TWeakObjectPtr<ULocalPlayer> PlayerOwner, EShooterDialogType::Type DialogType, const FText& Message, const FText& Confirm, const FText& Cancel, const FOnClicked& OnConfirm, const FOnClicked& OnCancel)
 //{
 //	UE_LOG(LogPlayerManagement, Log, TEXT("UShooterGameViewportClient::ShowDialog..."));
@@ -212,6 +213,7 @@ void UBRSGameViewportClient::HideLoadingScreen()
 
 void UBRSGameViewportClient::Tick(float DeltaSeconds)
 {
+	Super::Tick(DeltaSeconds);
 	//if (DialogWidget.IsValid() && !LoadingScreenWidget.IsValid())
 	//{
 	//	// Make sure the dialog widget always has focus
@@ -246,18 +248,12 @@ void UBRSGameViewportClient::DrawTransition(UCanvas* Canvas)
 void UBRSGameViewportClient::LostFocus(FViewport* inViewport)
 {
 	Super::LostFocus(inViewport);
-	UE_LOG(LogTemp, Log, TEXT("Lost Focus"));
 
 	if (GEngine && GetWorld())
 	{
 		if (GetWorld()->WorldType == EWorldType::Game)
 		{
-			APlayerController* LPC = GEngine->GetFirstLocalPlayerController(GetWorld());
-			if (LPC)
-			{
-				ABRSPlayerController_Base* BRSLPC = Cast<ABRSPlayerController_Base>(LPC);
-				BRSLPC->ShowPauseMenu(true);
-			}
+			GameInstance->GetTimerManager().SetTimer(ViewportLostTimer, this, &UBRSGameViewportClient::FocusLostTimerExpired, 5.f , false);
 		}
 	}
 }
@@ -269,7 +265,29 @@ void UBRSGameViewportClient::LostFocus(FViewport* inViewport)
 void UBRSGameViewportClient::ReceivedFocus(FViewport* inViewport)
 {
 	Super::ReceivedFocus(inViewport);
+	if (GameInstance->GetTimerManager().IsTimerActive(ViewportLostTimer))
+	{
+		GameInstance->GetTimerManager().ClearTimer(ViewportLostTimer);
+	}
 }
+
+
+
+void UBRSGameViewportClient::FocusLostTimerExpired()
+{
+	if (GameInstance->GetTimerManager().IsTimerActive(ViewportLostTimer))
+	{
+		GameInstance->GetTimerManager().ClearTimer(ViewportLostTimer);
+	}
+
+	APlayerController* LPC = GEngine->GetFirstLocalPlayerController(GetWorld());
+	if (LPC)
+	{
+		ABRSPlayerController_Base* BRSLPC = Cast<ABRSPlayerController_Base>(LPC);
+		BRSLPC->ShowPauseMenu(true);
+	}
+}
+
 
 #endif //WITH_EDITOR
 

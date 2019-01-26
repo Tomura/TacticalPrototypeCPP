@@ -11,7 +11,7 @@ UBRSBTComposite_Random::UBRSBTComposite_Random(const FObjectInitializer& ObjectI
 {
 	NodeName = "Random";
 
-	OnNextChild.BindUObject(this, &UBRSBTComposite_Random::GetNextChildHandler);
+	//OnNextChild.BindUObject(this, &UBRSBTComposite_Random::GetNextChildHandler);
 }
 
 

@@ -427,16 +427,24 @@ APawn* ATacticalGameMode::SpawnEnemy(ATacticalEnemyStart* StartSpot)
 		return nullptr;
 
 	TSubclassOf<ACharacter> EnemyClass = nullptr;
-	const int32 NumEnemyClasses = SpawnEnemyClass.Num();
-	if (NumEnemyClasses < 1)
+	if(StartSpot->EnemyClassOverride == nullptr)
 	{
-		EnemyClass = DefaultEnemyClass;
+		const int32 NumEnemyClasses = SpawnEnemyClass.Num();
+		if (NumEnemyClasses < 1)
+		{
+			EnemyClass = DefaultEnemyClass;
+		}
+		else
+		{
+			const int32 SpawnIdx = FMath::RandRange(0, NumEnemyClasses - 1);
+			EnemyClass = SpawnEnemyClass[SpawnIdx];
+		}
 	}
 	else
 	{
-		const int32 SpawnIdx = FMath::RandRange(0, NumEnemyClasses - 1);
-		EnemyClass = SpawnEnemyClass[SpawnIdx];
+		EnemyClass = StartSpot->EnemyClassOverride;
 	}
+
 
 	//TSubclassOf<ACharacter> EnemyClass = StartSpot->EnemyClassOverride ? StartSpot->EnemyClassOverride : DefaultEnemyClass;
 	if (!EnemyClass)

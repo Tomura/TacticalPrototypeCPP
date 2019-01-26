@@ -8,7 +8,9 @@ public class BRSLoadingScreen : ModuleRules
 {
     public BRSLoadingScreen(ReadOnlyTargetRules Target) : base(Target)
 	{
-		PrivateIncludePaths.Add("../../TacticalFPS/Source/BRSLoadingScreen/Private");
+        PrivatePCHHeaderFile = "Public/BRSLoadingScreen.h";
+
+        PrivateIncludePaths.Add("../../TacticalFPS/Source/BRSLoadingScreen/Private");
 
         PrivateDependencyModuleNames.AddRange(
 			new string[] {

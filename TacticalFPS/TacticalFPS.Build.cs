@@ -6,6 +6,7 @@ public class TacticalFPS : ModuleRules
 {
 	public TacticalFPS(ReadOnlyTargetRules Target) : base(Target)
     {
+        PrivatePCHHeaderFile = "TacticalFPS.h";
 		PublicDependencyModuleNames.AddRange(
             new string[] 
             {

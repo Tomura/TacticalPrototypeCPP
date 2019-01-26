@@ -148,8 +148,6 @@ class ATacticalWeapon* ATacticalWeaponPreviewScene::SpawnPreviewWeapon(TSubclass
 		NewWeapon->SetReplicateMovement(false);
 		NewWeapon->SetTickableWhenPaused(true);
 
-
-
 		USkeletalMeshComponent* MeshAsset = NewWeapon->GetMesh();
 		MeshAsset->SetRelativeTransform(NewWeapon->PreviewTransform);
 		MeshAsset->LightingChannels.bChannel0 = false;

@@ -93,4 +93,8 @@ protected:
 	//TSharedPtr<SShooterConfirmationDialog>			DialogWidget;
 
 	TSharedPtr<class SBRSLoadingScreen2>				LoadingScreenWidget;
+
+	FTimerHandle ViewportLostTimer;
+
+	virtual void FocusLostTimerExpired();
 };

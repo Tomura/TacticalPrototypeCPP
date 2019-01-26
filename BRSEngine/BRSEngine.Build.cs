@@ -6,6 +6,7 @@ public class BRSEngine : ModuleRules
 {
     public BRSEngine(ReadOnlyTargetRules Target) : base(Target)
 	{
+        PrivatePCHHeaderFile = "BRSEngine.h";
 		PublicDependencyModuleNames.AddRange(
             new string[] 
             {

@@ -63,6 +63,13 @@ class TACTICALFPS_API ATacticalWeapon : public ATacticalInventory
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Components, meta = (AllowPrivateAccess = "true"))
 	class USceneComponent* SightAimPoint;
 
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Components, meta = (AllowPrivateAccess = "true"))
+	UAudioComponent* FiringAudioComp;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Components, meta = (AllowPrivateAccess = "true"))
+	UAudioComponent* SilencedAudioComp;
+
 public:	
 
 	friend class UTacticalWeaponState;
@@ -540,6 +547,18 @@ public:
 		FVector WeaponOffset;
 
 
+	UPROPERTY(Category = "Depth of Field", EditDefaultsOnly)
+		bool bModifyDepthOfField;
+	UPROPERTY(Category = "Depth of Field", EditDefaultsOnly, meta = (EditCondition = "bModifyDepthOfField"))
+		float AimedNearBlurSizeMod;
+	UPROPERTY(Category = "Depth of Field", EditDefaultsOnly, meta = (EditCondition = "bModifyDepthOfField"))
+		float AimedFarBlurSizeMod;
+	UPROPERTY(Category = "Depth of Field", EditDefaultsOnly, meta = (EditCondition = "bModifyDepthOfField"))
+		float AimedFocusDistanceMod;
+	UPROPERTY(Category = "Depth of Field", EditDefaultsOnly, meta = (EditCondition = "bModifyDepthOfField"))
+		float AimedFStop;
+
+
 protected:
 
 	//UFUNCTION(Category = Weapon, BlueprintCallable, server, WithValidation)
@@ -767,6 +786,7 @@ protected:
 	UTacticalWeaponState* StateFiring;
 	UPROPERTY(Instanced, BlueprintReadOnly, Category = States)
 	UTacticalWeaponState* StateObstructed;
+
 };
 
 

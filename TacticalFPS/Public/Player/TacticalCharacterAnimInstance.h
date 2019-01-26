@@ -149,6 +149,10 @@ public:
 	UPROPERTY(Category = Movement, BlueprintReadOnly, EditAnywhere)
 	bool bIsFalling;
 
+
+	UPROPERTY(Category = Movement, BlueprintReadOnly, EditAnywhere)
+	bool bIsRelaxed;
+
 	UPROPERTY(Category = Movement, BlueprintReadOnly, EditAnywhere)
 	ETacticalStance Stance;
 

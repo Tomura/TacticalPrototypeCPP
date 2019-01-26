@@ -28,6 +28,8 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "BehaviorTree/BehaviorTree.h"
 
+#include "TacticalAIModifierVolume.h"
+
 #include "TacticalWeaponStateFiring.h"
 
 
@@ -57,6 +59,22 @@ ATacticalAIController::ATacticalAIController(const FObjectInitializer& OI)
 	BlackBoardAsset = nullptr;
 
 	HearingNavQueryFilter = nullptr;
+
+	VisionAngleMargin = 5; // deg
+
+	VisionAngleOverDistance = FRuntimeFloatCurve();
+	VisionAngleOverDistance.GetRichCurve()->AddKey(0.f, 90.f);
+	VisionAngleOverDistance.GetRichCurve()->AddKey(500.f, 90.f);
+	VisionAngleOverDistance.GetRichCurve()->AddKey(1500.f, 10.f);
+	VisionAngleOverDistance.GetRichCurve()->AddKey(5000.f, 10.f);
+
+
+	VisionStrengthOverDistance = FRuntimeFloatCurve();
+	VisionStrengthOverDistance.GetRichCurve()->AddKey(0.f, 1.f);
+	VisionStrengthOverDistance.GetRichCurve()->AddKey(500.f, 1.f);
+	VisionStrengthOverDistance.GetRichCurve()->AddKey(1500.f, 75.f);
+	VisionStrengthOverDistance.GetRichCurve()->AddKey(3000.f, 0.25f);
+	VisionStrengthOverDistance.GetRichCurve()->AddKey(5000.f, 0.25f);
 }
 
 void ATacticalAIController::BeginPlay()
@@ -143,58 +161,138 @@ void ATacticalAIController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-
 	TArray<AActor*> Enemies;
 
-	if (AIPerceptionComp)
+	float MinAlert = MinAlertness;
+	float AlertRate = AlertRateScale;
+
+	if (GetPawn() != nullptr)
 	{
-		AIPerceptionComp->GetCurrentlyPerceivedActors(SightConfig->GetSenseImplementation(), Enemies);
-		for (int32 i = Enemies.Num() - 1; i >= 0; --i)
+		ATacticalAIModifierVolume* BestAIMod = nullptr;
+		float BestDistSq = -1.f;
+		float BestExtSq = -1.f;
+		TArray<AActor*> OverlapVol;
+		GetPawn()->GetOverlappingActors(OverlapVol, ATacticalAIModifierVolume::StaticClass());
+
+		for (AActor* TestVol : OverlapVol)
 		{
-			if (Enemies.IsValidIndex(i))
+			ATacticalAIModifierVolume* TestAIMod = Cast<ATacticalAIModifierVolume>(TestVol);
+			if (TestAIMod != nullptr)
 			{
-				ATacticalCharacter* EnemyChar = Cast<ATacticalCharacter>(Enemies[i]);
-				if (!EnemyChar || GetTeamAttitudeTowards(*Enemies[i]) != ETeamAttitude::Hostile || !EnemyChar->IsAlive())
+				const float TestDistSq = FVector::DistSquared(GetPawn()->GetActorLocation(), TestAIMod->GetActorLocation());
+				const float TestExtSq = TestAIMod->GetBrushComponent()->Bounds.BoxExtent.SizeSquared();
+
+				if (BestAIMod == nullptr || TestExtSq < BestExtSq || TestDistSq < BestDistSq)
 				{
-					Enemies.RemoveAt(i);
+					BestAIMod = TestAIMod;
+					BestDistSq = TestDistSq;
+					BestExtSq = TestExtSq;
 				}
 			}
 		}
-	}
-
-
-	for (class AActor* EnemyActor : Enemies)
-	{
-		float currentAlert = 0.f;
-		float* currentAlertVal = Alertness.Find(EnemyActor);
-		if (currentAlertVal != nullptr)
+		if (BestAIMod)
 		{
-			currentAlert = *currentAlertVal;
+			MinAlert = BestAIMod->GetMinAwareness();
+			AlertRate = AlertRateScale * BestAIMod->GetAwarenessIncrementMultiplier();
 		}
 
-		FActorPerceptionBlueprintInfo Info;
-		PerceptionComponent->GetActorsPerception(EnemyActor, Info);
-		float SenseStrength = 0.f;
-		for (const FAIStimulus& TestStimulis : Info.LastSensedStimuli)
+		if (AIPerceptionComp)
 		{
-			if (TestStimulis.Type != PerceptionComponent->GetDominantSenseID())
-				continue;
-			SenseStrength = TestStimulis.Strength;
+			AIPerceptionComp->GetCurrentlyPerceivedActors(SightConfig->GetSenseImplementation(), Enemies);
+			for (int32 i = Enemies.Num() - 1; i >= 0; --i)
+			{
+				if (Enemies.IsValidIndex(i))
+				{
+					ATacticalCharacter* EnemyChar = Cast<ATacticalCharacter>(Enemies[i]);
+					if (!EnemyChar || GetTeamAttitudeTowards(*Enemies[i]) != ETeamAttitude::Hostile || !EnemyChar->IsAlive())
+					{
+						Enemies.RemoveAt(i);
+					}
+				}
+			}
 		}
 
-		Alertness.Add(EnemyActor, FMath::Min(currentAlert + (DeltaTime*(AlertRateScale*SenseStrength+AlertRegenRate)), MaxAlert));
-	}
 
-	Alertness.GenerateKeyArray(Enemies);
-	for(class AActor* EnemyActor : Enemies)
-	{
-		float* currentAlertVal = Alertness.Find(EnemyActor);
-		if (currentAlertVal != nullptr)
+		for (class AActor* EnemyActor : Enemies)
 		{
-			float currentAlert = *currentAlertVal;
-			Alertness.Add(EnemyActor, FMath::Max(currentAlert - (DeltaTime*AlertRegenRate), MinAlertness));
+			float currentAlert = 0.f;
+			float* currentAlertVal = Alertness.Find(EnemyActor);
+			if (currentAlertVal != nullptr)
+			{
+				currentAlert = *currentAlertVal;
+			}
+
+			FActorPerceptionBlueprintInfo Info;
+			PerceptionComponent->GetActorsPerception(EnemyActor, Info);
+			float SenseStrength = 0.f;
+			for (const FAIStimulus& TestStimulis : Info.LastSensedStimuli)
+			{
+				if (TestStimulis.Type != PerceptionComponent->GetDominantSenseID())
+					continue;
+				SenseStrength = TestStimulis.Strength;
+			}
+
+			// scale strength depending on distance and angle
+			const FVector myLoc = GetPawn()->GetActorLocation();
+			const FVector otherLoc = EnemyActor->GetActorLocation();
+
+			const float Dist = FVector::Distance(myLoc, otherLoc); // alternatively
+
+			SenseStrength *= VisionStrengthOverDistance.GetRichCurve()->Eval(Dist);
+
+			const float Angle = FMath::RadiansToDegrees((otherLoc - myLoc).CosineAngle2D(GetPawn()->GetViewRotation().Vector()));
+
+			const float AngleLimit = VisionAngleOverDistance.GetRichCurve()->Eval(Dist);
+			const float AngleDelta = FMath::Max(Angle - AngleLimit, 0.f);
+			if (AngleDelta > 0)
+			{
+				if (AngleDelta > VisionAngleMargin)
+				{
+					SenseStrength = 0.f;
+					continue;
+				}
+				else
+				{
+					SenseStrength *= FMath::Lerp(0.f, 1.f, AngleDelta / VisionAngleMargin);
+				}
+			}
+
+			if (SenseStrength > 0.f)
+			{
+				Alertness.Add(EnemyActor, FMath::Min(currentAlert + (DeltaTime*(AlertRate*SenseStrength + AlertRegenRate)), MaxAlert));
+			}
 		}
+
+		Alertness.GenerateKeyArray(Enemies);
+		for (class AActor* EnemyActor : Enemies)
+		{
+			float* currentAlertVal = Alertness.Find(EnemyActor);
+			if (currentAlertVal != nullptr)
+			{
+				float currentAlert = *currentAlertVal;
+				Alertness.Add(EnemyActor, FMath::Max(currentAlert - (DeltaTime*AlertRegenRate), MinAlert));
+			}
+		}
+
+		OverallAlertness = 0.f;
+		if (Alertness.Num() > 0)
+		{
+			float ResultAlert = 0.f;
+			TArray<float> ValAlert;
+			Alertness.GenerateValueArray(ValAlert);
+			for (float& TestVal : ValAlert)
+			{
+				OverallAlertness = FMath::Max(TestVal, ResultAlert);
+			}
+		}
+		OverallAlertness = FMath::Max(OverallAlertness, MinAlert); // overall alertness level should not be smaller than the minimal alertness
 	}
+}
+
+float ATacticalAIController::GetAwareness() const
+{
+
+	return OverallAlertness;
 }
 
 
@@ -270,6 +368,8 @@ void ATacticalAIController::OnPawnTakeDamage_Implementation(float Damage, const 
 
 }
 
+
+
 void ATacticalAIController::GetEnemiesInSight(TArray<AActor*>& OutActors) const
 {
 	if (AIPerceptionComp)
@@ -307,7 +407,7 @@ void ATacticalAIController::GetEnemiesInSight(TArray<AActor*>& OutActors) const
 	}
 }
 
-void ATacticalAIController::GetPercievedDamageOrigins(TArray<FVector>& OutVectors, TArray<AActor*> OutActors,float MaxAge) const
+void ATacticalAIController::GetPercievedDamageOrigins(TArray<FVector>& OutVectors, TArray<AActor*>& OutActors,float MaxAge) const
 {
 	// if we have no pawn, don't even bother
 	if (!GetPawn())
@@ -368,7 +468,7 @@ void ATacticalAIController::GetPercievedDamageOrigins(TArray<FVector>& OutVector
 	}
 }
 
-void ATacticalAIController::GetPercievedHearingOrigins(TArray<FVector>& OutVectors, TArray<AActor*> OutActors, float MaxAge /*= 0.f*/, TSubclassOf<AActor> ActorClassFilter /*=nullptr*/) const
+void ATacticalAIController::GetPercievedHearingOrigins(TArray<FVector>& OutVectors, TArray<AActor*>& OutActors, float MaxAge /*= 0.f*/, TSubclassOf<AActor> ActorClassFilter /*=nullptr*/) const
 {
 	OutVectors.Empty();
 

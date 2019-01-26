@@ -8,6 +8,7 @@
 #include "TacticalPlayerController.h"
 #include "TacticalWeapon.h"
 #include "TacticalCharacterAnimInstance.h"
+#include "TacticalAIController.h"
 
 
 UTacticalCharacterAnimInstance::UTacticalCharacterAnimInstance()
@@ -21,6 +22,7 @@ UTacticalCharacterAnimInstance::UTacticalCharacterAnimInstance()
 	LeanRotation = FRotator::ZeroRotator;
 	bIsFalling = false;
 	bIsSprinting = false;
+	bIsRelaxed = false;
 	Accel = 0.f;
 
 	Stance = ETacticalStance::STANCE_Default;
@@ -301,6 +303,11 @@ void UTacticalCharacterAnimInstance::NativeUpdateAnimation(const float DeltaTime
 				const FTransform LFootTransform = MyChar->GetMesh()->GetSocketTransform(FName(TEXT("foot_l")), RTS_World);
 				LeftFootData.TargetLocation = LFootTransform.InverseTransformVector(LeftFootLoc);
 				LeftFootData.TargetRotation = CalculateFootRotfromNormal(LeftFootNormal);
+			}
+
+			if (ATacticalAIController* AIC = MyChar->GetTacticalAIController())
+			{
+				bIsRelaxed = (AIC->GetAwareness() < 1.f);
 			}
 		}
 	}

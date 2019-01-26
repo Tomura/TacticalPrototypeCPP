@@ -18,7 +18,7 @@ public:
 	UBRSBTComposite_Random(const FObjectInitializer& ObjectInitializer);
 
 
-	int32 GetNextChildHandler(struct FBehaviorTreeSearchData& SearchData, int32 PrevChild, EBTNodeResult::Type LastResult) const;
+	virtual int32 GetNextChildHandler(struct FBehaviorTreeSearchData& SearchData, int32 PrevChild, EBTNodeResult::Type LastResult) const override;
 
 #if WITH_EDITOR
 	virtual FName GetNodeIconName() const override;

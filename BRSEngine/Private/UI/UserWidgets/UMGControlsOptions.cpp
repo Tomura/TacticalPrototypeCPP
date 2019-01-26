@@ -31,7 +31,7 @@ void UUMGControlsOptions::ResetKeyBindsToDefaults()
 
 float UUMGControlsOptions::GetMouseSensitivity() const
 {
-	return UPlayerInput::StaticClass()->GetDefaultObject<UPlayerInput>()->GetMouseSensitivity();
+	return UPlayerInput::StaticClass()->GetDefaultObject<UPlayerInput>()->GetMouseSensitivityX(); // todo or Y
 }
 
 void UUMGControlsOptions::SetMouseSettings(float NewSensitivity, bool bInvertY)

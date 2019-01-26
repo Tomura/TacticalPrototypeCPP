@@ -3,6 +3,7 @@
 #include "BRSEngine.h"
 #include "GameFramework/PlayerInput.h"
 #include "Animation/AnimMontage.h"
+#include "Animation/AnimSequence.h"
 #include "GameMapsSettings.h"
 #include "BRSMenuGameMode_Base.h"
 #include "BRSPlayerController_Base.h"

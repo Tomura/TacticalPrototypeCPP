@@ -48,6 +48,7 @@
 #include "Perception/AISense_Team.h"
 
 #include "Components/WidgetInteractionComponent.h"
+#include "TacticalPhysicalMaterial.h"
 
 //////////////////////////////////////////////////////////////////////////
 // ATacticalCharacter
@@ -81,7 +82,7 @@ ATacticalCharacter::ATacticalCharacter(const FObjectInitializer& OI)
 	GetCharacterMovement()->AirControl = 0.2f;
 	GetCharacterMovement()->SetIsReplicated(true);
 
-	GetMesh()->MeshComponentUpdateFlag = EMeshComponentUpdateFlag::AlwaysTickPoseAndRefreshBones;
+	GetMesh()->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
 	GetMesh()->bEnablePhysicsOnDedicatedServer = true; // for rag doll
 
 	// Create a follow camera
@@ -106,7 +107,7 @@ ATacticalCharacter::ATacticalCharacter(const FObjectInitializer& OI)
 	FPMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	FPMesh->bOnlyOwnerSee = true;
 	FPMesh->SetVisibility(false);
-	FPMesh->MeshComponentUpdateFlag = EMeshComponentUpdateFlag::AlwaysTickPoseAndRefreshBones;
+	FPMesh->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
 
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
@@ -281,6 +282,7 @@ void ATacticalCharacter::BeginPlay()
 
 	// Register as stimuli source
 	UAIPerceptionSystem::RegisterPerceptionStimuliSource(this, UAISense_Hearing::StaticClass(), this);
+
 }
 
 void ATacticalCharacter::Restart()
@@ -606,9 +608,9 @@ void ATacticalCharacter::SetGenericTeamId(const FGenericTeamId& TeamID)
 
 FGenericTeamId ATacticalCharacter::GetGenericTeamId() const
 {
-	if (PlayerState)
+	if (GetPlayerState())
 	{
-		IGenericTeamAgentInterface* TeamPlayerState = Cast<IGenericTeamAgentInterface>(PlayerState);
+		IGenericTeamAgentInterface* TeamPlayerState = Cast<IGenericTeamAgentInterface>(GetPlayerState());
 		if (TeamPlayerState)
 		{
 			return TeamPlayerState->GetGenericTeamId();
@@ -627,9 +629,9 @@ FGenericTeamId ATacticalCharacter::GetGenericTeamId() const
 
 ETeamAttitude::Type ATacticalCharacter::GetTeamAttitudeTowards(const AActor& Other) const
 {
-	if (PlayerState)
+	if (GetPlayerState())
 	{
-		IGenericTeamAgentInterface* TeamPlayerState = Cast<IGenericTeamAgentInterface>(PlayerState); 
+		IGenericTeamAgentInterface* TeamPlayerState = Cast<IGenericTeamAgentInterface>(GetPlayerState()); 
 		if (TeamPlayerState)
 		{
 			return TeamPlayerState->GetTeamAttitudeTowards(Other);
@@ -859,6 +861,15 @@ void ATacticalCharacter::Landed(const FHitResult& Hit)
 		const float FallDamage = (MinSafeFallSpeedZ - FallingVelocityZ) / (MinSafeFallSpeedZ - LethalFallSpeedZ) * 100.f;
 		// maybe delay it for a tick (todo)
 		TakeDamage(FallDamage, FDamageEvent(UDamageType::StaticClass()), GetController(), this);
+	}
+
+	if (Hit.PhysMaterial != nullptr)
+	{
+		if (UTacticalPhysicalMaterial* TPM = Cast<UTacticalPhysicalMaterial>(Hit.PhysMaterial))
+		{
+			const FVector SoundLoc = GetCapsuleComponent()->GetComponentLocation() - FVector::UpVector*GetCapsuleComponent()->GetScaledCapsuleHalfHeight()*0.9f;
+			UGameplayStatics::PlaySoundAtLocation(this, TPM->FallSound, SoundLoc);
+		}
 	}
 }
 
@@ -2947,7 +2958,6 @@ void ATacticalCharacter::TickFootIK(float DeltaTime)
 				MinZ = Hit.ImpactPoint.Z;
 			}
 		}
-
 	}
 
 	// Determine how much Root needs to be moved and smooth it.
@@ -3012,6 +3022,35 @@ bool ATacticalCharacter::TraceFoot(FHitResult& Hit, const FName& FootSocketName)
 }
 
 
+
+void ATacticalCharacter::PlayFootStepSound(bool bLeftFoot)
+{
+	if (GetNetMode() == ENetMode::NM_DedicatedServer)
+		return;
+
+	if (GetCharacterMovement()->CurrentFloor.IsWalkableFloor())
+	{
+		FVector FootLoc;
+		if (GetMesh() != nullptr)
+		{
+			FootLoc = GetMesh()->GetSocketLocation(bLeftFoot ? FName("foottrace_l") : FName("foottrace_r"));
+		}
+		else
+		{
+			return;
+		}
+
+		UTacticalPhysicalMaterial* TacPhysMat = Cast<UTacticalPhysicalMaterial>(GetCharacterMovement()->CurrentFloor.HitResult.PhysMaterial);
+		if (TacPhysMat != nullptr)
+		{
+			UGameplayStatics::PlaySoundAtLocation(this, TacPhysMat->FootStepSound, FootLoc);
+		}
+		else
+		{
+			UGameplayStatics::PlaySoundAtLocation(this, DefaultFootStepSound, FootLoc);
+		}
+	}
+}
 
 void ATacticalCharacter::AdjustMeshHeight(float HalfHeightAdjust, float ScaledHalfHeightAdjust)
 {
@@ -3260,9 +3299,9 @@ bool ATacticalCharacter::CanBeSeenFrom(const FVector& ObserverLocation, FVector&
 
 bool ATacticalCharacter::IsAIControlled() const
 {
-	if (PlayerState)
+	if (GetPlayerState())
 	{
-		return PlayerState->bIsABot;
+		return GetPlayerState()->bIsABot;
 	}
 	// Character doesn't seem to have a player state
 	// we test the controller if we are authority

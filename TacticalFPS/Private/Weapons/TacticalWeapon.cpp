@@ -31,6 +31,7 @@
 
 #include "TacticalImpactFXComponent.h"
 #include "TacticalImpactFX.h"
+#include "TacticalPhysicalMaterial.h"
 
 #include "TacticalArmsAnimInstance.h"
 #include "TacticalWeaponAnimInstance.h"
@@ -101,6 +102,19 @@ ATacticalWeapon::ATacticalWeapon(const FObjectInitializer& OI)
 	BaseAimPoint->SetupAttachment(Mesh);
 	SightAimPoint = CreateDefaultSubobject<USceneComponent>(TEXT("SightAimPoint"));
 	SightAimPoint->SetupAttachment(BaseAimPoint);
+
+	FiringAudioComp = CreateDefaultSubobject<UAudioComponent>(FName(TEXT("FiringAudio")));
+	FiringAudioComp->SetupAttachment(Mesh);
+	FiringAudioComp->RelativeLocation = FVector::ZeroVector;
+	FiringAudioComp->RelativeRotation = FRotator::ZeroRotator;
+	FiringAudioComp->bAutoActivate = false;
+
+	SilencedAudioComp = CreateDefaultSubobject<UAudioComponent>(FName(TEXT("SilencedFiringAudio")));
+	SilencedAudioComp->SetupAttachment(Mesh);
+	SilencedAudioComp->RelativeLocation = FVector::ZeroVector;
+	SilencedAudioComp->RelativeRotation = FRotator::ZeroRotator;
+	SilencedAudioComp->bAutoActivate = false;
+	//FiringAudioComp->Sound = FiringSound_Default;
 
 
 	EquipTime = 0.7f;
@@ -195,6 +209,14 @@ ATacticalWeapon::ATacticalWeapon(const FObjectInitializer& OI)
 	ReloadAnimOffsetRight = FVector(0.f, 0.f, 0.f);
 
 	LeftHandSocketName = FName("LeftHand");
+
+	bModifyDepthOfField = false;
+	AimedFarBlurSizeMod = 0.f;
+	AimedNearBlurSizeMod = 0.f;
+	AimedFocusDistanceMod = 1000.f;
+	AimedFStop = 20.f;
+
+	FiringAudioComp = nullptr;
 }
 
 void ATacticalWeapon::PostInitializeComponents()
@@ -205,6 +227,8 @@ void ATacticalWeapon::PostInitializeComponents()
 	{
 		StateFireC->GetSimulateFireEvent().AddDynamic(this, &ATacticalWeapon::NativeLocalSimulateFire);
 	}
+
+	UE_LOG(LogTemp, Log, TEXT("Size of FHitResult: %d"), sizeof(FHitResult));
 }
 
 void ATacticalWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -287,6 +311,38 @@ void ATacticalWeapon::Tick( float DeltaTime )
 
 	// Tick Spread
 	TickSpread(DeltaTime);
+
+
+	// Tick DOF
+	ATacticalCharacter* myChar = GetInventoryOwner();
+	if(bModifyDepthOfField && myChar != nullptr && (!myChar->IsThirdPerson()) && myChar->GetWeapon() == this &&  GetSightAttachment() == nullptr)
+	{
+		const float ADS_alpha = (this == myChar->GetWeapon()) ? myChar->GetADSState() : 0.f;
+		const FPostProcessSettings& DefaultPlayerPostProcess = GetDefault<ATacticalCharacter>(myChar->GetClass())->GetFirstPersonCamera()->PostProcessSettings;
+		FPostProcessSettings& PlayerPostProcess = myChar->GetFirstPersonCamera()->PostProcessSettings;
+
+		const float ppalpha = FMath::InterpEaseInOut(0.f, 1.f, ADS_alpha, 3);
+
+
+		//const float FarBlur		= DefaultPlayerPostProcess.DepthOfFieldFarBlurSize	 + FMath::FloorToFloat(FMath::Lerp(0.f, AimedFarBlurSizeMod,  ppalpha));
+		//const float NearBlur	= DefaultPlayerPostProcess.DepthOfFieldNearBlurSize  + FMath::FloorToFloat(FMath::Lerp(0.f, AimedNearBlurSizeMod, ppalpha));
+		//const float Focus		= DefaultPlayerPostProcess.DepthOfFieldFocalDistance + FMath::Lerp(0.f, AimedFocusDistanceMod,  ppalpha);
+
+		const float deltadistance = AimedFocusDistanceMod - DefaultPlayerPostProcess.DepthOfFieldFocalDistance;
+		const float Focus = DefaultPlayerPostProcess.DepthOfFieldFocalDistance + FMath::Lerp(0.f, deltadistance, ppalpha);
+
+		const float deltafstop = AimedFStop - DefaultPlayerPostProcess.DepthOfFieldFstop;
+		const float Fstop = DefaultPlayerPostProcess.DepthOfFieldFstop + FMath::Lerp(0.f, deltafstop, ppalpha);
+
+		//PlayerPostProcess.DepthOfFieldFarBlurSize = FarBlur;
+		//PlayerPostProcess.DepthOfFieldNearBlurSize = NearBlur;
+		PlayerPostProcess.DepthOfFieldFocalDistance = Focus;
+		PlayerPostProcess.DepthOfFieldFstop = Fstop;
+
+		//const float defaultBlur = DefaultPlayerPostProcess.MotionBlurAmount;
+		//const float newMotionBlur = FMath::Lerp(defaultBlur, defaultBlur*0.25f, ppalpha);
+		//PlayerPostProcess.MotionBlurAmount = newMotionBlur;
+	}
 }
 
 void ATacticalWeapon::Destroyed()
@@ -940,7 +996,7 @@ FVector ATacticalWeapon::GetWeaponOffset(bool bAimed /*= false*/) const
 {
 	//FVector AimedOffset = WeaponAimOffset;
 	const FVector RelLoc = GetInventoryOwner()->IsWeaponLeftHanded() ? GetMesh()->RelativeLocation * FVector(-1.f, 1.f, 1.f) : GetMesh()->RelativeLocation;
-	FVector AimedOffset = - BaseAimPoint->RelativeLocation - RelLoc;
+	FVector AimedOffset = ((-BaseAimPoint->RelativeLocation) * GetMesh()->RelativeScale3D) - RelLoc;
 	{
 		const float tempX = AimedOffset.X;
 		AimedOffset.X = AimedOffset.Y;
@@ -1304,10 +1360,10 @@ void ATacticalWeapon::PlayFiringSound_Implementation()
 	ATacticalWeaponAttachment_Muzzle* Muzzle = GetMuzzleAttachment();
 	const bool bSilenced = (Muzzle != nullptr) && Muzzle->IsSilencer();
 
-	USoundCue* FiringSoundToUse = bSilenced ? FiringSound_Silenced : FiringSound_Default;
+	const UAudioComponent* FiringSoundToUse = bSilenced ? SilencedAudioComp : FiringAudioComp;
 	if(FiringSoundToUse)
 	{
-		UGameplayStatics::PlaySoundAtLocation(this, FiringSoundToUse, GetActorLocation(), GetCameraAim().Rotation());
+		FiringSoundToUse->Activate(true);
 	}
 }
 
@@ -1380,7 +1436,14 @@ void ATacticalWeapon::LocalSimulateHit_Implementation(FHitResult Hit, const FVec
 
 		const FVector ShotDir = (Hit.TraceEnd - Hit.TraceStart).GetSafeNormal();
 
-		if (AmmoCDO->GetImpactEffect())
+		UTacticalPhysicalMaterial* TacPhysMat = Hit.PhysMaterial != nullptr ?
+			Cast<UTacticalPhysicalMaterial>(Hit.PhysMaterial) : nullptr;
+
+		if (TacPhysMat != nullptr)
+		{
+			TacPhysMat->SpawnImpactFX(GetWorld(), Hit, ShotDir, ImpactFXComp);
+		}
+		else if (AmmoCDO->GetImpactEffect())
 		{
 			ATacticalImpactFX* ImpactEffectCDO = AmmoCDO->GetImpactEffect()->GetDefaultObject<ATacticalImpactFX>();
 			if (ImpactEffectCDO)

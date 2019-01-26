@@ -6,6 +6,7 @@ public class BRSEditor : ModuleRules
 {
 	public BRSEditor(ReadOnlyTargetRules Target) : base(Target)
     {
+        PrivatePCHHeaderFile = "Public/BRSEditor.h";
         PrivateIncludePaths.AddRange(new string[] { 
 			"BRSEngine/Private/"
             });

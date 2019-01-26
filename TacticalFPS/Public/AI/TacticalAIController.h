@@ -72,13 +72,16 @@ public:
 
 
 	UFUNCTION(Category = TacticalAI, BlueprintCallable)
+	virtual float GetAwareness() const;
+
+	UFUNCTION(Category = TacticalAI, BlueprintCallable)
 	virtual void GetEnemiesInSight(TArray<AActor*>& OutActors) const;
 
 	UFUNCTION(Category = TacticalAI, BlueprintCallable)
-	virtual void GetPercievedDamageOrigins(TArray<FVector>& OutVectors, TArray<AActor*> OutActors, float MaxAge = 0.f) const;
+	virtual void GetPercievedDamageOrigins(TArray<FVector>& OutVectors, TArray<AActor*>& OutActors, float MaxAge = 0.f) const;
 
 	UFUNCTION(Category = TacticalAI, BlueprintCallable)
-		virtual void GetPercievedHearingOrigins(TArray<FVector>& OutVectors, TArray<AActor*> OutActors, float MaxAge = 0.f, TSubclassOf<AActor> ActorClassFilter =nullptr) const;
+		virtual void GetPercievedHearingOrigins(TArray<FVector>& OutVectors, TArray<AActor*>& OutActors, float MaxAge = 0.f, TSubclassOf<AActor> ActorClassFilter =nullptr) const;
 
 	UFUNCTION(Category = TacticalAI, BlueprintCallable)
 	virtual void GetPercievedTeamNotifications(TArray<FVector>& OutVectors, float MaxAge = 0.f) const;
@@ -225,9 +228,19 @@ protected:
 	UPROPERTY(Category = Aim, EditAnywhere)
 	float AimError;
 
+
+	UPROPERTY(Category = Perception, EditAnywhere)
+	FRuntimeFloatCurve VisionStrengthOverDistance;
+	UPROPERTY(Category = Perception, EditAnywhere)
+		FRuntimeFloatCurve VisionAngleOverDistance;
+	UPROPERTY(Category = Perception, EditAnywhere)
+	float VisionAngleMargin;
+
+
 	// 0 - does not expect enemy. 1 - does know of enemy and has a idea of the location (hearing, damage, team) but has not seem him. 2 engaged
 	UPROPERTY(Category = Alert, BlueprintReadOnly)
 	TMap<class AActor*, float> Alertness;
+	float OverallAlertness;
 
 	// Minimal Level of Alertness. Prevents the  Alertness value to go down further if enemy knows that a thread could be running around
 	UPROPERTY(Category = Alert, EditDefaultsOnly, BlueprintReadWrite)

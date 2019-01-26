@@ -926,6 +926,9 @@ protected:
 	
 public:
 
+	UFUNCTION(Category = "Tactical Character | Sound", BlueprintCallable)
+	virtual void PlayFootStepSound(bool bLeftFoot);
+
 	bool IsWeaponDown() { return bWeaponDown; }
 
 	/** Returns CameraBoom subobject **/
